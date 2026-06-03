@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Manage Users — Shopora Admin</title><link rel="stylesheet" href="../../css/style.css"></head>
+<body>
+  <div class="sp-page-grid"><main class="sp-container" id="admin-users"></main></div>
+  <script src="../../js/db/storage.js"></script><script src="../../js/services/authService.js"></script><script src="../../js/services/productService.js"></script><script src="../../js/services/cartService.js"></script><script src="../../js/services/orderService.js"></script><script src="../../js/services/analyticsService.js"></script><script src="../../js/services/adminService.js"></script><script src="../../js/utils/logger.js"></script><script src="../../js/utils/toast.js"></script><script src="../../js/utils/chartHelper.js"></script><script src="../../js/components.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!AuthService.hasRole('admin')) { window.location.href = 'admin-login.html'; return; }
+      Components.injectDashboardHeader('admin'); Components.injectAdminSidebar(); renderUsers();
+    });
+    function renderUsers() {
+      const users = AdminService.getAllUsers();
+      document.getElementById('admin-users').innerHTML = `
+        <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:1.5rem;">Registered Users (${users.length})</h2>
+        <div class="sp-table-wrap"><table class="sp-table"><thead><tr><th>Name</th><th>Email</th><th>Orders</th><th>Wishlist</th><th>Action</th></tr></thead><tbody>
+        ${users.map(u => {
+          const orderCount = OrderService.getOrdersByUser(u.id).length;
+          return `<tr>
+            <td style="font-weight:500;">${u.name||'—'}</td>
+            <td>${u.email}</td>
+            <td>${orderCount}</td>
+            <td>${(u.wishlist||[]).length}</td>
+            <td><button class="sp-btn sp-btn-danger" style="padding:.3rem .6rem;font-size:.75rem;" onclick="delUser('${u.id}')">Delete</button></td>
+          </tr>`;
+        }).join('')}
+        </tbody></table></div>`;
+    }
+    function delUser(id) { if (!confirm('Delete this user?')) return; AdminService.deleteUser(id); Toast.show('User deleted.','info'); renderUsers(); }
+  </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Analytics — Shopora Seller</title><link rel="stylesheet" href="../../css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script></head>
+<body>
+  <div class="sp-page-grid"><main class="sp-container" id="analytics-content"></main></div>
+  <script src="../../js/db/storage.js"></script><script src="../../js/services/authService.js"></script><script src="../../js/services/productService.js"></script><script src="../../js/services/cartService.js"></script><script src="../../js/services/orderService.js"></script><script src="../../js/services/analyticsService.js"></script><script src="../../js/services/adminService.js"></script><script src="../../js/utils/logger.js"></script><script src="../../js/utils/toast.js"></script><script src="../../js/utils/chartHelper.js"></script><script src="../../js/components.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!AuthService.hasRole('seller')) { window.location.href = 'seller-login.html'; return; }
+      Components.injectDashboardHeader('seller'); Components.injectSellerSidebar();
+      const seller = AuthService.getCurrentUser();
+      const stats = AnalyticsService.getSellerStats(seller.id);
+      const orders = OrderService.getOrdersBySeller(seller.id);
+      const avgOrder = orders.length ? (orders.reduce((s,o)=>s+o.total,0)/orders.length) : 0;
+      const top = AnalyticsService.getSellerTopProducts(seller.id, 5);
+
+      document.getElementById('analytics-content').innerHTML = `
+        <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:1.5rem;">Analytics & Insights</h2>
+        <div class="sp-stats-grid">
+          <div class="sp-stat-card"><div class="sp-stat-label">Total Revenue</div><div class="sp-stat-value" style="color:var(--success);">$${stats.revenue.toLocaleString()}</div></div>
+          <div class="sp-stat-card"><div class="sp-stat-label">Avg Order Value</div><div class="sp-stat-value">$${avgOrder.toFixed(2)}</div></div>
+          <div class="sp-stat-card"><div class="sp-stat-label">Total Reviews</div><div class="sp-stat-value">${stats.totalReviews}</div></div>
+          <div class="sp-stat-card"><div class="sp-stat-label">Conversion Rate</div><div class="sp-stat-value">3.2%</div><div class="sp-stat-sub">Simulated metric</div></div>
+        </div>
+        <div class="sp-charts-row">
+          <div class="sp-chart-card"><h4>Revenue Over Time</h4><div class="sp-chart-wrap"><canvas id="rev-line-chart"></canvas></div></div>
+          <div class="sp-chart-card"><h4>Orders by Status</h4><div class="sp-chart-wrap"><canvas id="status-donut"></canvas></div></div>
+        </div>
+        ${top.length ? `<div class="sp-table-wrap"><div class="sp-table-header"><h3>Top Products by Engagement</h3></div>
+          <table class="sp-table"><thead><tr><th>Product</th><th>Avg Rating</th><th>Reviews</th><th>Stock</th></tr></thead><tbody>
+          ${top.map(p => `<tr><td style="font-weight:500;">${p.title}</td><td><span class="sp-stars">${'★'.repeat(Math.round(ProductService.getAvgRating(p)))}</span> ${ProductService.getAvgRating(p)}</td><td>${p.reviews.length}</td><td>${p.stock}</td></tr>`).join('')}
+          </tbody></table></div>` : ''}`;
+
+      try {
+        const rd = AnalyticsService.getSellerRevenueChart(seller.id);
+        if (rd.labels.length) ChartHelper.createLine('rev-line-chart', rd.labels, rd.data, 'Revenue ($)', '#0ea5e9');
+        else document.querySelector('#rev-line-chart').parentElement.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem;">No data yet</p>';
+        ChartHelper.createDoughnut('status-donut', ['Pending','Shipped','Delivered'], [stats.pendingOrders, stats.shippedOrders, stats.deliveredOrders]);
+      } catch(e) { console.warn('Charts unavailable:', e.message); }
+    });
+  </script>
+</body>
+</html>

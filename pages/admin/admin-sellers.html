@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Manage Sellers — Shopora Admin</title><link rel="stylesheet" href="../../css/style.css"></head>
+<body>
+  <div class="sp-page-grid"><main class="sp-container" id="admin-sellers"></main></div>
+  <script src="../../js/db/storage.js"></script><script src="../../js/services/authService.js"></script><script src="../../js/services/productService.js"></script><script src="../../js/services/cartService.js"></script><script src="../../js/services/orderService.js"></script><script src="../../js/services/analyticsService.js"></script><script src="../../js/services/adminService.js"></script><script src="../../js/utils/logger.js"></script><script src="../../js/utils/toast.js"></script><script src="../../js/utils/chartHelper.js"></script><script src="../../js/components.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!AuthService.hasRole('admin')) { window.location.href = 'admin-login.html'; return; }
+      Components.injectDashboardHeader('admin'); Components.injectAdminSidebar(); renderSellers();
+    });
+    function renderSellers() {
+      const sellers = AdminService.getAllSellers();
+      document.getElementById('admin-sellers').innerHTML = `
+        <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:1.5rem;">Registered Sellers (${sellers.length})</h2>
+        <div class="sp-table-wrap"><table class="sp-table"><thead><tr><th>Company</th><th>Email</th><th>Products</th><th>Revenue</th><th>Status</th><th>Action</th></tr></thead><tbody>
+        ${sellers.map(s => `<tr>
+          <td style="font-weight:500;">${s.companyName||'—'}</td>
+          <td>${s.email}</td>
+          <td>${s.productsCount||0}</td>
+          <td>$${(s.revenue||0).toLocaleString()}</td>
+          <td><span class="sp-badge ${s.status==='active'?'sp-badge-success':'sp-badge-danger'}">${s.status}</span></td>
+          <td>
+            ${s.status==='active'
+              ? `<button class="sp-btn sp-btn-danger" style="padding:.3rem .6rem;font-size:.75rem;" onclick="banSeller('${s.id}')">Ban</button>`
+              : `<button class="sp-btn sp-btn-success" style="padding:.3rem .6rem;font-size:.75rem;" onclick="activateSeller('${s.id}')">Activate</button>`
+            }
+          </td>
+        </tr>`).join('')}
+        </tbody></table></div>`;
+    }
+    function banSeller(id) { AdminService.banSeller(id); Toast.show('Seller banned.','warn'); renderSellers(); }
+    function activateSeller(id) { AdminService.activateSeller(id); Toast.show('Seller activated.','success'); renderSellers(); }
+  </script>
+</body>
+</html>

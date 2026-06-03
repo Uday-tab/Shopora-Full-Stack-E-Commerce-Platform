@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Checkout — Shopora</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+  <div class="sp-container" id="checkout-page"></div>
+  <script src="../../js/db/storage.js"></script><script src="../../js/services/authService.js"></script><script src="../../js/services/productService.js"></script><script src="../../js/services/cartService.js"></script><script src="../../js/services/orderService.js"></script><script src="../../js/services/analyticsService.js"></script><script src="../../js/services/adminService.js"></script><script src="../../js/utils/logger.js"></script><script src="../../js/utils/toast.js"></script><script src="../../js/utils/chartHelper.js"></script><script src="../../js/components.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      Components.injectCustomerNav(); Components.injectFooter();
+      if (!AuthService.isLoggedIn()) { Toast.show('Please sign in to checkout.','warn'); setTimeout(() => window.location.href = 'login.html', 1500); return; }
+      const cart = CartService.getCart();
+      if (!cart.length) { window.location.href = 'cart.html'; return; }
+      const user = AuthService.getCurrentUser();
+      const addr = (user.addresses && user.addresses[0]) || {};
+      const subtotal = CartService.getSubtotal(); const tax = +(subtotal*.08).toFixed(2); const total = +(subtotal+tax).toFixed(2);
+
+      document.getElementById('checkout-page').innerHTML = `
+        <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:1.5rem;">Checkout</h2>
+        <div class="sp-checkout-grid">
+          <div>
+            <div class="sp-form-card"><h3>Shipping Address</h3>
+              <div class="sp-form-group"><label>Full Name</label><input id="co-name" value="${user.name||''}"></div>
+              <div class="sp-form-group"><label>Address Line</label><input id="co-addr" value="${addr.line1||''}"></div>
+              <div class="sp-form-row">
+                <div class="sp-form-group"><label>City</label><input id="co-city" value="${addr.city||''}"></div>
+                <div class="sp-form-group"><label>State</label><input id="co-state" value="${addr.state||''}"></div>
+              </div>
+              <div class="sp-form-row">
+                <div class="sp-form-group"><label>ZIP Code</label><input id="co-zip" value="${addr.zip||''}"></div>
+                <div class="sp-form-group"><label>Phone</label><input id="co-phone" value="${addr.phone||''}"></div>
+              </div>
+            </div>
+            <div class="sp-form-card"><h3>Payment Method</h3>
+              <div class="sp-form-group"><label>Card Number</label><input id="co-card" placeholder="4111 1111 1111 1111" value="4111 1111 1111 1111"></div>
+              <div class="sp-form-row">
+                <div class="sp-form-group"><label>Expiry</label><input id="co-exp" placeholder="MM/YY" value="12/28"></div>
+                <div class="sp-form-group"><label>CVV</label><input id="co-cvv" placeholder="123" value="123"></div>
+              </div>
+              <p style="font-size:.75rem;color:var(--text-muted);margin-top:.5rem;">This is a simulation. No real charges will be made.</p>
+            </div>
+            <button class="sp-btn sp-btn-primary sp-btn-block" onclick="placeOrder()" style="padding:.85rem;">Place Order — $${total.toFixed(2)}</button>
+          </div>
+          <div class="sp-cart-summary">
+            <h3>Order Summary</h3>
+            ${cart.map(item => `<div style="display:flex;justify-content:space-between;margin-bottom:.5rem;font-size:.85rem;"><span>${item.title.length > 30 ? item.title.slice(0,30) + '…' : item.title} ×${item.quantity}</span><span>$${((item.variantPrice||item.effectivePrice)*item.quantity).toFixed(2)}</span></div>`).join('')}
+            <div class="sp-summary-row" style="margin-top:.75rem;"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
+            <div class="sp-summary-row"><span>Tax</span><span>$${tax.toFixed(2)}</span></div>
+            <div class="sp-summary-row"><span>Shipping</span><span style="color:var(--success);">FREE</span></div>
+            <div class="sp-summary-total"><span>Total</span><span>$${total.toFixed(2)}</span></div>
+          </div>
+        </div>`;
+    });
+
+    function placeOrder() {
+      const cart = CartService.getCart();
+      const user = AuthService.getCurrentUser();
+      const addr = { name: document.getElementById('co-name').value, line1: document.getElementById('co-addr').value, city: document.getElementById('co-city').value, state: document.getElementById('co-state').value, zip: document.getElementById('co-zip').value, phone: document.getElementById('co-phone').value };
+      if (!addr.name || !addr.line1 || !addr.city) { Toast.show('Please fill all address fields.','warn'); return; }
+
+      const subtotal = CartService.getSubtotal(); const tax = +(subtotal*.08).toFixed(2); const total = +(subtotal+tax).toFixed(2);
+      // Group items by seller for individual orders
+      const sellerGroups = {};
+      cart.forEach(item => { const sid = item.sellerId || 'unknown'; if (!sellerGroups[sid]) sellerGroups[sid] = []; sellerGroups[sid].push(item); });
+
+      const orderIds = [];
+      Object.entries(sellerGroups).forEach(([sellerId, items]) => {
+        const orderSubtotal = items.reduce((s, i) => s + (i.variantPrice || i.effectivePrice) * i.quantity, 0);
+        const orderTax = +(orderSubtotal * 0.08).toFixed(2);
+        const orderTotal = +(orderSubtotal + orderTax).toFixed(2);
+        const order = OrderService.createOrder({ userId: user.id, sellerId, items, total: orderTotal, shippingAddress: addr });
+        orderIds.push(order.id);
+      });
+
+      CartService.clearCart();
+      Components.updateCartBadge();
+      window.location.href = `order-confirmation.html?ids=${orderIds.join(',')}`;
+    }
+  </script>
+</body>
+</html>

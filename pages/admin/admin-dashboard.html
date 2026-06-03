@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Admin Dashboard — Shopora</title><link rel="stylesheet" href="../../css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script></head>
+<body>
+  <div class="sp-page-grid"><main class="sp-container" id="admin-dash"></main></div>
+  <script src="../../js/db/storage.js"></script><script src="../../js/services/authService.js"></script><script src="../../js/services/productService.js"></script><script src="../../js/services/cartService.js"></script><script src="../../js/services/orderService.js"></script><script src="../../js/services/analyticsService.js"></script><script src="../../js/services/adminService.js"></script><script src="../../js/utils/logger.js"></script><script src="../../js/utils/toast.js"></script><script src="../../js/utils/chartHelper.js"></script><script src="../../js/components.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!AuthService.hasRole('admin')) { window.location.href = 'admin-login.html'; return; }
+      Components.injectDashboardHeader('admin'); Components.injectAdminSidebar();
+      const stats = AnalyticsService.getPlatformStats();
+      const orders = OrderService.getAllOrders().slice(-5).reverse();
+
+      const allUsers = AdminService.getAllUsers();
+      const userMap = {};
+      allUsers.forEach(u => { userMap[u.id] = u.name || u.email || u.id; });
+
+      document.getElementById('admin-dash').innerHTML = `
+        <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:1.5rem;">Platform Overview</h2>
+        <div class="sp-stats-grid">
+          <div class="sp-stat-card"><div class="sp-stat-label">Total Revenue</div><div class="sp-stat-value" style="color:var(--success);">$${stats.totalRevenue.toLocaleString()}</div></div>
+          <div class="sp-stat-card"><div class="sp-stat-label">Users</div><div class="sp-stat-value">${stats.totalUsers}</div></div>
+          <div class="sp-stat-card"><div class="sp-stat-label">Sellers</div><div class="sp-stat-value">${stats.totalSellers}</div></div>
+          <div class="sp-stat-card"><div class="sp-stat-label">Products</div><div class="sp-stat-value">${stats.totalProducts}</div></div>
+          <div class="sp-stat-card"><div class="sp-stat-label">Orders</div><div class="sp-stat-value">${stats.totalOrders}</div></div>
+          <div class="sp-stat-card"><div class="sp-stat-label">Pending Reports</div><div class="sp-stat-value" style="color:${stats.pendingReports?'var(--danger)':'var(--success)'};">${stats.pendingReports}</div></div>
+        </div>
+
+        <div class="sp-charts-row">
+          <div class="sp-chart-card"><h4>Platform Revenue</h4><div class="sp-chart-wrap"><canvas id="platform-rev-chart"></canvas></div></div>
+          <div class="sp-chart-card"><h4>Products by Category</h4><div class="sp-chart-wrap"><canvas id="cat-chart"></canvas></div></div>
+        </div>
+
+        <div class="sp-table-wrap">
+          <div class="sp-table-header"><h3>Recent Orders</h3></div>
+          <table class="sp-table"><thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Date</th><th>Status</th></tr></thead><tbody>
+          ${orders.length ? orders.map(o => `<tr>
+            <td style="font-family:monospace;font-size:.78rem;">${o.id}</td>
+            <td>${userMap[o.userId] || o.userId}</td>
+            <td>${o.items.length} item(s)</td>
+            <td>$${o.total.toFixed(2)}</td><td>${o.date}</td>
+            <td><span class="sp-badge ${o.status==='delivered'?'sp-badge-success':o.status==='shipped'?'sp-badge-info':'sp-badge-warning'}">${o.status}</span></td>
+          </tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">No orders</td></tr>'}
+          </tbody></table>
+        </div>`;
+
+      try {
+        const rd = AnalyticsService.getPlatformRevenueChart();
+        if (rd.labels.length) ChartHelper.createBar('platform-rev-chart', rd.labels, rd.data, 'Revenue ($)', '#ea580c');
+        else document.querySelector('#platform-rev-chart').parentElement.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem;">No data</p>';
+
+        const allProds = AdminService.getAllProducts().filter(p => p.status === 'published');
+        const catMap = {};
+        allProds.forEach(p => { catMap[p.category] = (catMap[p.category]||0) + 1; });
+        ChartHelper.createDoughnut('cat-chart', Object.keys(catMap), Object.values(catMap));
+      } catch(e) { console.warn('Charts unavailable (Chart.js may not have loaded):', e.message); }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopora — Database Debugger</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; color: #333; }
+    .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    h1 { margin-top: 0; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+    .product-list { display: grid; gap: 20px; margin-top: 20px; }
+    .product-card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; background: #f8fafc; }
+    .product-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 10px; }
+    .product-title { font-size: 1.2rem; font-weight: bold; color: #ea580c; }
+    .product-images { display: flex; gap: 10px; margin: 15px 0; }
+    .image-preview { width: 120px; height: 120px; border: 1px solid #cbd5e1; background: #fff; display: flex; align-items: center; justify-content: center; padding: 5px; overflow: hidden; border-radius: 4px; }
+    .image-preview svg, .image-preview img { max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; }
+    .raw-code { font-family: monospace; background: #0f172a; color: #38bdf8; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 0.85rem; max-height: 150px; white-space: pre-wrap; word-break: break-all; }
+    .btn { background: #ea580c; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: background 0.2s; text-decoration: none; display: inline-block; }
+    .btn:hover { background: #c2410c; }
+    .btn-secondary { background: #64748b; }
+    .btn-secondary:hover { background: #475569; }
+    textarea { width: 100%; height: 100px; font-family: monospace; font-size: 0.8rem; margin: 10px 0; border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px; box-sizing: border-box; }
+    .actions { display: flex; gap: 10px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Shopora LocalStorage Inspector & SVG Fixer</h1>
+    <p>This utility allows you to inspect the products in your local database, view their raw SVG image code, and fix or edit them directly.</p>
+    
+    <div class="actions" style="margin-bottom: 20px;">
+      <button class="btn btn-secondary" onclick="location.reload()">🔄 Refresh Data</button>
+      <button class="btn btn-secondary" onclick="resetDatabase()">⚠️ Reset Database to Seed Data</button>
+    </div>
+
+    <div id="inspector-status"></div>
+    <div class="product-list" id="products-container"></div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadProducts();
+    });
+
+    function loadProducts() {
+      const productsJson = localStorage.getItem('products');
+      const statusEl = document.getElementById('inspector-status');
+      const container = document.getElementById('products-container');
+      
+      if (!productsJson) {
+        statusEl.innerHTML = '<div style="color:red; font-weight:bold;">No products found in localStorage! Click Reset to populate seed data.</div>';
+        container.innerHTML = '';
+        return;
+      }
+
+      const products = JSON.parse(productsJson);
+      statusEl.innerHTML = `<strong>Total Products in Database:</strong> ${products.length}`;
+      
+      container.innerHTML = products.map((p, pIndex) => {
+        const imagesHTML = (p.images || []).map((img, i) => {
+          return `
+            <div style="flex: 1; min-width: 250px; border: 1px dashed #cbd5e1; padding: 10px; border-radius: 4px; background: #fff;">
+              <strong>Image Slot ${i + 1}</strong>
+              <div class="image-preview" style="margin: 10px 0;">${img}</div>
+              <div style="font-size: 0.8rem; font-weight: bold; margin-top: 5px;">Raw Code:</div>
+              <div class="raw-code">${escapeHtml(img)}</div>
+              <textarea id="edit-img-${pIndex}-${i}">${img}</textarea>
+              <button class="btn" style="padding: 4px 8px; font-size: 0.8rem;" onclick="saveImage('${p.id}', ${i}, ${pIndex})">Update Image</button>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="product-card">
+            <div class="product-header">
+              <span class="product-title">${p.title} (ID: ${p.id})</span>
+              <span><strong>Brand:</strong> ${p.brand} | <strong>Price:</strong> $${p.price}</span>
+            </div>
+            <div><strong>Description:</strong> ${p.description}</div>
+            <div class="product-images">
+              ${imagesHTML.length ? imagesHTML : '<div style="color: #64748b;">No images uploaded.</div>'}
+            </div>
+            <div class="actions">
+              <button class="btn btn-secondary" onclick="autoFixProduct('${p.id}')">✨ Auto-Fix SVGs for this Product</button>
+              <a href="pages/customer/product.html?id=${p.id}" target="_blank" class="btn">View Product Detail Page ↗</a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function saveImage(productId, imgIndex, pIndex) {
+      const newVal = document.getElementById(`edit-img-${pIndex}-${imgIndex}`).value;
+      const products = JSON.parse(localStorage.getItem('products') || '[]');
+      const p = products.find(prod => prod.id === productId);
+      if (p && p.images) {
+        p.images[imgIndex] = newVal;
+        localStorage.setItem('products', JSON.stringify(products));
+        alert('Image updated successfully!');
+        loadProducts();
+      }
+    }
+
+    function resetDatabase() {
+      if (confirm('Are you sure you want to reset the database? This will clear all changes and reload seed data.')) {
+        localStorage.removeItem('shopora_seeded');
+        localStorage.removeItem('products');
+        location.reload();
+      }
+    }
+
+    /* Auto-fix helper */
+    function autoFixProduct(productId) {
+      const products = JSON.parse(localStorage.getItem('products') || '[]');
+      const pIndex = products.findIndex(prod => prod.id === productId);
+      if (pIndex === -1) return;
+      
+      const p = products[pIndex];
+      if (!p.images || !p.images.length) return;
+      
+      p.images = p.images.map(img => {
+        let raw = img.trim();
+        // Extract SVG portion if there are wrappers or headers
+        const svgStartIdx = raw.toLowerCase().indexOf('<svg');
+        if (svgStartIdx !== -1) {
+          raw = raw.substring(svgStartIdx);
+        }
+        
+        if (!raw.startsWith('<svg')) return raw;
+        
+        const div = document.createElement('div');
+        div.innerHTML = raw;
+        const svg = div.querySelector('svg');
+        if (!svg) return raw;
+        
+        // Remove hardcoded width and height attributes
+        const widthAttr = svg.getAttribute('width');
+        const heightAttr = svg.getAttribute('height');
+        
+        if (!svg.getAttribute('viewBox')) {
+          const w = parseFloat(widthAttr) || 300;
+          const h = parseFloat(heightAttr) || 300;
+          svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+        }
+        
+        svg.removeAttribute('width');
+        svg.removeAttribute('height');
+        svg.style.width = '100%';
+        svg.style.height = '100%';
+        
+        // Ensure path/rect elements have stroke/fill styles if needed, 
+        // and that they don't block visibility
+        return div.innerHTML;
+      });
+      
+      products[pIndex] = p;
+      localStorage.setItem('products', JSON.stringify(products));
+      alert('Product SVGs updated & sanitized! Reloading...');
+      loadProducts();
+    }
+  </script>
+</body>
+</html>

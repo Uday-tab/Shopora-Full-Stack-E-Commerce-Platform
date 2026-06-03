@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Manage Products — Shopora Admin</title><link rel="stylesheet" href="../../css/style.css"></head>
+<body>
+  <div class="sp-page-grid"><main class="sp-container" id="admin-prods"></main></div>
+  <script src="../../js/db/storage.js"></script><script src="../../js/services/authService.js"></script><script src="../../js/services/productService.js"></script><script src="../../js/services/cartService.js"></script><script src="../../js/services/orderService.js"></script><script src="../../js/services/analyticsService.js"></script><script src="../../js/services/adminService.js"></script><script src="../../js/utils/logger.js"></script><script src="../../js/utils/toast.js"></script><script src="../../js/utils/chartHelper.js"></script><script src="../../js/components.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!AuthService.hasRole('admin')) { window.location.href = 'admin-login.html'; return; }
+      Components.injectDashboardHeader('admin'); Components.injectAdminSidebar(); renderProds();
+    });
+    function renderProds(search='') {
+      let prods = AdminService.getAllProducts();
+      if (search) prods = prods.filter(p => p.title.toLowerCase().includes(search.toLowerCase()));
+      document.getElementById('admin-prods').innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+          <h2 style="font-size:1.3rem;font-weight:700;">All Products (${prods.length})</h2>
+          <input type="text" placeholder="Search products..." value="${search}" oninput="renderProds(this.value)" style="padding:.5rem .85rem;border:1px solid var(--border);border-radius:var(--radius);width:250px;">
+        </div>
+        <div class="sp-table-wrap"><table class="sp-table"><thead><tr><th>Image</th><th>Title</th><th>Seller</th><th>Price</th><th>Stock</th><th>Status</th><th>Action</th></tr></thead><tbody>
+        ${prods.map(p => `<tr>
+          <td><div class="sp-table-img">${p.images&&p.images[0]?p.images[0]:''}</div></td>
+          <td style="font-weight:500;max-width:220px;">${p.title}</td>
+          <td>${p.sellerName||p.sellerId}</td>
+          <td>$${p.price.toFixed(2)}</td>
+          <td>${p.stock}</td>
+          <td><span class="sp-badge ${p.status==='published'?'sp-badge-success':'sp-badge-info'}">${p.status}</span></td>
+          <td><button class="sp-btn sp-btn-danger" style="padding:.3rem .6rem;font-size:.75rem;" onclick="removeProd('${p.id}')">Remove</button></td>
+        </tr>`).join('')}
+        </tbody></table></div>`;
+    }
+    function removeProd(id) { if (!confirm('Remove this product from the platform?')) return; AdminService.removeProduct(id); Toast.show('Product removed.','info'); renderProds(); }
+  </script>
+</body>
+</html>

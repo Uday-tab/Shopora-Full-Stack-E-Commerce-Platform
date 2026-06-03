@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Shopping Cart — Shopora</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+  <div class="sp-container" id="cart-page"></div>
+  <script src="../../js/db/storage.js"></script><script src="../../js/services/authService.js"></script><script src="../../js/services/productService.js"></script><script src="../../js/services/cartService.js"></script><script src="../../js/services/orderService.js"></script><script src="../../js/services/analyticsService.js"></script><script src="../../js/services/adminService.js"></script><script src="../../js/utils/logger.js"></script><script src="../../js/utils/toast.js"></script><script src="../../js/utils/chartHelper.js"></script><script src="../../js/components.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => { Components.injectCustomerNav(); Components.injectFooter(); renderCart(); });
+
+    function renderCart() {
+      const cart = CartService.getCart();
+      const page = document.getElementById('cart-page');
+      if (!cart.length) {
+        page.innerHTML = '<div class="sp-empty" style="padding:4rem;"><div class="sp-empty-icon">🛒</div><h3>Your cart is empty</h3><p style="margin:.75rem 0;">Looks like you haven\'t added anything yet.</p><a href="search.html" class="sp-btn sp-btn-primary">Start Shopping</a></div>';
+        return;
+      }
+      const subtotal = CartService.getSubtotal();
+      const savings = CartService.getSavings();
+      const tax = +(subtotal * 0.08).toFixed(2);
+      const total = +(subtotal + tax).toFixed(2);
+
+      page.innerHTML = `
+        <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:1.5rem;">Shopping Cart (${CartService.getItemCount()} items)</h2>
+        <div class="sp-cart-grid">
+          <div id="cart-items">${cart.map((item, i) => {
+            const prod = ProductService.getById(item.productId);
+            const img = prod && prod.images && prod.images[0] ? prod.images[0] : '';
+            return `
+            <div class="sp-cart-item">
+              <div class="sp-cart-item-img">${img}</div>
+              <div class="sp-cart-item-info">
+                <div class="sp-cart-item-title">${item.title}</div>
+                <div class="sp-cart-item-meta">${item.variant ? [item.variant.color, item.variant.size, item.variant.storage].filter(v => v && v !== 'N/A').join(' · ') : ''} · Sold by ${item.sellerName || 'Shopora Seller'}</div>
+                <div class="sp-cart-qty">
+                  <button class="sp-cart-qty-btn" onclick="updateQ(${i},-1)">−</button>
+                  <span>${item.quantity}</span>
+                  <button class="sp-cart-qty-btn" onclick="updateQ(${i},1)">+</button>
+                  <button class="sp-cart-remove-btn" onclick="removeItem(${i})">Remove</button>
+                </div>
+              </div>
+              <div class="sp-cart-item-price">$${((item.variantPrice || item.effectivePrice) * item.quantity).toFixed(2)}</div>
+            </div>
+          `}).join('')}</div>
+          <div class="sp-cart-summary">
+            <h3>Order Summary</h3>
+            <div class="sp-summary-row"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
+            ${savings > 0 ? `<div class="sp-summary-row" style="color:var(--success);"><span>You Save</span><span>-$${savings.toFixed(2)}</span></div>` : ''}
+            <div class="sp-summary-row"><span>Estimated Tax</span><span>$${tax.toFixed(2)}</span></div>
+            <div class="sp-summary-row"><span>Shipping</span><span style="color:var(--success);font-weight:600;">FREE</span></div>
+            <div class="sp-summary-total"><span>Total</span><span>$${total.toFixed(2)}</span></div>
+            <a href="checkout.html" class="sp-btn sp-btn-primary sp-btn-block" style="margin-top:1rem;text-align:center;">Proceed to Checkout</a>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateQ(idx, delta) { const cart = CartService.getCart(); CartService.updateQuantity(idx, cart[idx].quantity + delta); Components.updateCartBadge(); renderCart(); }
+    function removeItem(idx) { CartService.removeItem(idx); Components.updateCartBadge(); renderCart(); Toast.show('Item removed.', 'info'); }
+  </script>
+</body>
+</html>
