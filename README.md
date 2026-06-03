@@ -1,7 +1,7 @@
 # Shopora — Full-Stack E-Commerce Platform
 
 ## Overview
-
+ 
 Shopora is a production-style multi-page e-commerce web application inspired by Amazon's architecture and workflow. Built entirely with HTML5, CSS3, and vanilla JavaScript, it demonstrates how a complete online marketplace can be implemented without frontend frameworks or backend dependencies.
 
 The platform includes dedicated Customer, Seller, and Admin portals, simulating real-world e-commerce operations such as product management, order processing, inventory tracking, analytics, moderation, and user management.
