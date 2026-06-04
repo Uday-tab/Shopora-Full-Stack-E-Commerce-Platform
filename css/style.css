@@ -254,6 +254,7 @@ input,select,textarea{font-family:var(--font);font-size:.9rem;}
 .sp-badge-info{background:#f0f9ff;color:var(--info);}
 .sp-badge-purple{background:#faf5ff;color:var(--purple);}
 
+/* ============ DASHBOARD CHARTS ============ */
 /* ============ CHART CONTAINERS ============ */
 .sp-chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;}
 .sp-chart-card h4{font-size:.9rem;font-weight:700;margin-bottom:1rem;}
