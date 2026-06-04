@@ -39,8 +39,28 @@ const AnalyticsService = (() => {
   };
 
   const getSellerTopProducts = (sellerId, limit = 5) => {
-    return ShoporaDB.query('products', p => p.sellerId === sellerId)
-      .sort((a, b) => b.ratings.length - a.ratings.length)
+    const products = ShoporaDB.query('products', p => p.sellerId === sellerId);
+    const orders = OrderService.getOrdersBySeller(sellerId);
+
+    /* Calculate total units sold per product from actual orders */
+    const salesMap = {};
+    orders.forEach(o => {
+      (o.items || []).forEach(item => {
+        salesMap[item.productId] = (salesMap[item.productId] || 0) + (item.quantity || 1);
+      });
+    });
+
+    /* Combined score: units sold + (reviews × 2) + avg rating
+       This balances sales volume with customer engagement */
+    return products
+      .map(p => {
+        const unitsSold = salesMap[p.id] || 0;
+        const reviewCount = (p.reviews || []).length;
+        const avgRating = p.ratings && p.ratings.length ? p.ratings.reduce((a, b) => a + b, 0) / p.ratings.length : 0;
+        const score = unitsSold + (reviewCount * 2) + avgRating;
+        return { ...p, _unitsSold: unitsSold, _score: Math.round(score * 10) / 10 };
+      })
+      .sort((a, b) => b._score - a._score)
       .slice(0, limit);
   };
 
