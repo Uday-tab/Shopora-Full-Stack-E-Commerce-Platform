@@ -19,7 +19,7 @@
         </div>
         <div class="sp-table-wrap"><table class="sp-table"><thead><tr><th>Image</th><th>Title</th><th>Seller</th><th>Price</th><th>Stock</th><th>Status</th><th>Action</th></tr></thead><tbody>
         ${prods.map(p => `<tr>
-          <td><div class="sp-table-img">${p.images&&p.images[0]?p.images[0]:''}</div></td>
+          <td><div class="sp-table-img"><img src="${p.images&&p.images[0]?p.images[0]:''}" alt="${p.title}" style="width:100%;height:100%;object-fit:contain;"></div></td>
           <td style="font-weight:500;max-width:220px;">${p.title}</td>
           <td>${p.sellerName||p.sellerId}</td>
           <td>$${p.price.toFixed(2)}</td>

@@ -31,7 +31,7 @@
             const img = prod && prod.images && prod.images[0] ? prod.images[0] : '';
             return `
             <div class="sp-cart-item">
-              <div class="sp-cart-item-img">${img}</div>
+              <div class="sp-cart-item-img">${img ? `<img src="${img}" alt="${item.title || 'Product'}" style="width:100%;height:100%;object-fit:contain;">` : '<span style="color:var(--text-muted);font-size:.75rem;">No image</span>'}</div>
               <div class="sp-cart-item-info">
                 <div class="sp-cart-item-title">${item.title}</div>
                 <div class="sp-cart-item-meta">${item.variant ? [item.variant.color, item.variant.size, item.variant.storage].filter(v => v && v !== 'N/A').join(' · ') : ''} · Sold by ${item.sellerName || 'Shopora Seller'}</div>

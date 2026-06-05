@@ -96,10 +96,10 @@
               <button class="sp-btn sp-btn-outline" onclick="addVariantRow()" style="margin-top:.75rem;">+ Add Variant</button>
             </div>
 
-            <div class="sp-form-card"><h3>Product Images (SVG)</h3>
-              <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem;">Paste inline SVG code for product images. One per textarea.</p>
+            <div class="sp-form-card"><h3>Product Images</h3>
+              <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem;">Upload product images (PNG, JPG, WebP, GIF, or SVG). Max 500KB per image.</p>
               <div id="images-list"></div>
-              <button class="sp-btn sp-btn-outline" onclick="addImageSlot()">+ Add Image Slot</button>
+              <button class="sp-btn sp-btn-outline" onclick="addImageSlot()">+ Add Image</button>
             </div>
 
             <div class="sp-btn-group" style="margin-top:1.5rem;">
@@ -157,43 +157,36 @@
     }
 
     function addImageSlot() { images.push(''); renderImages(); }
+    function handleImageUpload(index, file) {
+      if (!file) return;
+      if (file.size > 512000) { Toast.show('Image too large. Max 500KB.', 'warn'); return; }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        images[index] = e.target.result;
+        renderImages();
+        renderPreview();
+      };
+      if (file.type === 'image/svg+xml') {
+        /* Read SVG as text and convert to safe data URL */
+        const textReader = new FileReader();
+        textReader.onload = (e) => {
+          images[index] = 'data:image/svg+xml,' + encodeURIComponent(e.target.result);
+          renderImages();
+          renderPreview();
+        };
+        textReader.readAsText(file);
+      } else {
+        reader.readAsDataURL(file);
+      }
+    }
     function renderImages() {
       const el = document.getElementById('images-list'); if (!el) return;
       el.innerHTML = images.map((img,i) => `<div style="margin-bottom:.75rem;">
         <label style="font-size:.8rem;font-weight:600;">Image ${i+1}</label>
-        <textarea rows="3" id="img-slot-${i}" style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:.75rem;font-family:monospace;margin-top:.25rem;" oninput="images[${i}]=this.value;renderPreview();">${img}</textarea>
-        ${img.trim() ? '<div style="background:#f1f5f9;border-radius:var(--radius);height:80px;display:flex;align-items:center;justify-content:center;padding:.5rem;margin-top:.25rem;overflow:hidden;">' + img + '</div>' : ''}
+        <input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" onchange="handleImageUpload(${i}, this.files[0])" style="display:block;margin-top:.25rem;font-size:.8rem;">
+        ${img ? `<div style="background:#f1f5f9;border-radius:var(--radius);height:80px;display:flex;align-items:center;justify-content:center;padding:.5rem;margin-top:.25rem;overflow:hidden;"><img src="${img}" alt="Preview ${i+1}" style="max-width:100%;max-height:100%;object-fit:contain;"></div>` : ''}
         <button onclick="images.splice(${i},1);renderImages();renderPreview();" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:.75rem;">Remove</button>
       </div>`).join('');
-    }
-
-    /* Safety: collect latest textarea values before save */
-    function collectImages() {
-      images = images.map((img, i) => {
-        const ta = document.getElementById('img-slot-' + i);
-        return ta ? ta.value : img;
-      });
-    }
-
-    /* Normalize SVGs: remove hardcoded width/height, ensure viewBox exists */
-    function sanitizeSvg(raw) {
-      const s = raw.trim();
-      if (!s.startsWith('<svg')) return s;
-      const div = document.createElement('div');
-      div.innerHTML = s;
-      const svg = div.querySelector('svg');
-      if (!svg) return s;
-      /* If viewBox is missing, build one from width/height before removing them */
-      if (!svg.getAttribute('viewBox')) {
-        const w = parseFloat(svg.getAttribute('width')) || 100;
-        const h = parseFloat(svg.getAttribute('height')) || 100;
-        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-      }
-      svg.removeAttribute('width');
-      svg.removeAttribute('height');
-      svg.style.width = '100%';
-      svg.style.height = '100%';
-      return div.innerHTML;
     }
 
     function renderPreview() {
@@ -201,12 +194,11 @@
       const price = parseFloat(document.getElementById('p-price')?.value) || 0;
       const discount = parseInt(document.getElementById('p-discount')?.value) || 0;
       const ep = discount ? +(price * (1 - discount/100)).toFixed(2) : price;
-      const rawImg = images.find(i => i.trim()) || '';
-      const img = sanitizeSvg(rawImg);
+      const imgSrc = images.find(i => i && i.trim()) || '';
       const el = document.getElementById('preview-content');
       if (!el) return;
       el.innerHTML = `
-        <div style="background:#f1f5f9;border-radius:var(--radius);height:180px;display:flex;align-items:center;justify-content:center;padding:1rem;margin-bottom:1rem;overflow:hidden;">${img}</div>
+        <div style="background:#f1f5f9;border-radius:var(--radius);height:180px;display:flex;align-items:center;justify-content:center;padding:1rem;margin-bottom:1rem;overflow:hidden;">${imgSrc ? `<img src="${imgSrc}" alt="Preview" style="max-width:100%;max-height:100%;object-fit:contain;">` : '<span style="color:var(--text-muted);">No image</span>'}</div>
         <div style="font-weight:600;margin-bottom:.4rem;">${title}</div>
         <div style="font-size:1.2rem;font-weight:800;font-family:var(--font-heading);">$${ep.toFixed(2)}
           ${discount ? `<span style="font-size:.8rem;text-decoration:line-through;color:var(--text-muted);margin-left:.3rem;">$${price.toFixed(2)}</span><span style="font-size:.75rem;color:var(--accent);margin-left:.3rem;">-${discount}%</span>` : ''}
@@ -216,7 +208,6 @@
     }
 
     function saveProduct(status) {
-      collectImages();
       const seller = AuthService.getCurrentUser();
       const title = document.getElementById('p-title').value.trim();
       const price = parseFloat(document.getElementById('p-price').value);
@@ -229,7 +220,7 @@
         category: document.getElementById('p-category').value,
         subcategory: document.getElementById('p-subcat').value.trim(),
         price, discount: parseInt(document.getElementById('p-discount').value) || 0,
-        images: images.filter(i => i.trim()).map(i => sanitizeSvg(i)),
+        images: images.filter(i => i && i.trim()),
         specifications: Object.fromEntries(specs.map(s => [s.key, s.val])),
         features, variants, tags,
         deliveryDays: parseInt(document.getElementById('p-delivery').value) || 3,

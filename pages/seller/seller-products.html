@@ -27,7 +27,7 @@
         </div>
         ${products.length ? `<div class="sp-table-wrap"><table class="sp-table"><thead><tr><th>Image</th><th>Title</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead><tbody>
         ${products.map(p => `<tr>
-          <td><div class="sp-table-img">${p.images && p.images[0] ? p.images[0] : ''}</div></td>
+          <td><div class="sp-table-img"><img src="${p.images&&p.images[0]?p.images[0]:''}" alt="${p.title}" style="width:100%;height:100%;object-fit:contain;"></div></td>
           <td style="font-weight:500;max-width:250px;">${p.title}</td>
           <td>$${p.price.toFixed(2)}${p.discount ? ` <span style="color:var(--accent);font-size:.75rem;">-${p.discount}%</span>` : ''}</td>
           <td><span class="sp-badge ${p.stock===0?'sp-badge-danger':p.stock<10?'sp-badge-warning':'sp-badge-success'}">${p.stock} units</span></td>

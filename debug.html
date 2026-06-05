@@ -26,8 +26,8 @@
 </head>
 <body>
   <div class="container">
-    <h1>Shopora LocalStorage Inspector & SVG Fixer</h1>
-    <p>This utility allows you to inspect the products in your local database, view their raw SVG image code, and fix or edit them directly.</p>
+    <h1>Shopora LocalStorage Inspector</h1>
+    <p>This utility allows you to inspect the products in your local database and view their stored images.</p>
     
     <div class="actions" style="margin-bottom: 20px;">
       <button class="btn btn-secondary" onclick="location.reload()">🔄 Refresh Data</button>
@@ -62,11 +62,9 @@
           return `
             <div style="flex: 1; min-width: 250px; border: 1px dashed #cbd5e1; padding: 10px; border-radius: 4px; background: #fff;">
               <strong>Image Slot ${i + 1}</strong>
-              <div class="image-preview" style="margin: 10px 0;">${img}</div>
-              <div style="font-size: 0.8rem; font-weight: bold; margin-top: 5px;">Raw Code:</div>
-              <div class="raw-code">${escapeHtml(img)}</div>
-              <textarea id="edit-img-${pIndex}-${i}">${img}</textarea>
-              <button class="btn" style="padding: 4px 8px; font-size: 0.8rem;" onclick="saveImage('${p.id}', ${i}, ${pIndex})">Update Image</button>
+              <div class="image-preview" style="margin: 10px 0;"><img src="${img}" alt="Product image ${i+1}" style="max-width:100%;max-height:100%;object-fit:contain;"></div>
+              <div style="font-size: 0.8rem; font-weight: bold; margin-top: 5px;">Data URL (${img.length} chars):</div>
+              <div class="raw-code">${escapeHtml(img.substring(0, 200))}${img.length > 200 ? '...' : ''}</div>
             </div>
           `;
         }).join('');
@@ -82,7 +80,6 @@
               ${imagesHTML.length ? imagesHTML : '<div style="color: #64748b;">No images uploaded.</div>'}
             </div>
             <div class="actions">
-              <button class="btn btn-secondary" onclick="autoFixProduct('${p.id}')">✨ Auto-Fix SVGs for this Product</button>
               <a href="pages/customer/product.html?id=${p.id}" target="_blank" class="btn">View Product Detail Page ↗</a>
             </div>
           </div>
@@ -100,74 +97,12 @@
         .replace(/'/g, "&#039;");
     }
 
-    function saveImage(productId, imgIndex, pIndex) {
-      const newVal = document.getElementById(`edit-img-${pIndex}-${imgIndex}`).value;
-      const products = JSON.parse(localStorage.getItem('products') || '[]');
-      const p = products.find(prod => prod.id === productId);
-      if (p && p.images) {
-        p.images[imgIndex] = newVal;
-        localStorage.setItem('products', JSON.stringify(products));
-        alert('Image updated successfully!');
-        loadProducts();
-      }
-    }
-
     function resetDatabase() {
       if (confirm('Are you sure you want to reset the database? This will clear all changes and reload seed data.')) {
         localStorage.removeItem('shopora_seeded');
         localStorage.removeItem('products');
         location.reload();
       }
-    }
-
-    /* Auto-fix helper */
-    function autoFixProduct(productId) {
-      const products = JSON.parse(localStorage.getItem('products') || '[]');
-      const pIndex = products.findIndex(prod => prod.id === productId);
-      if (pIndex === -1) return;
-      
-      const p = products[pIndex];
-      if (!p.images || !p.images.length) return;
-      
-      p.images = p.images.map(img => {
-        let raw = img.trim();
-        // Extract SVG portion if there are wrappers or headers
-        const svgStartIdx = raw.toLowerCase().indexOf('<svg');
-        if (svgStartIdx !== -1) {
-          raw = raw.substring(svgStartIdx);
-        }
-        
-        if (!raw.startsWith('<svg')) return raw;
-        
-        const div = document.createElement('div');
-        div.innerHTML = raw;
-        const svg = div.querySelector('svg');
-        if (!svg) return raw;
-        
-        // Remove hardcoded width and height attributes
-        const widthAttr = svg.getAttribute('width');
-        const heightAttr = svg.getAttribute('height');
-        
-        if (!svg.getAttribute('viewBox')) {
-          const w = parseFloat(widthAttr) || 300;
-          const h = parseFloat(heightAttr) || 300;
-          svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-        }
-        
-        svg.removeAttribute('width');
-        svg.removeAttribute('height');
-        svg.style.width = '100%';
-        svg.style.height = '100%';
-        
-        // Ensure path/rect elements have stroke/fill styles if needed, 
-        // and that they don't block visibility
-        return div.innerHTML;
-      });
-      
-      products[pIndex] = p;
-      localStorage.setItem('products', JSON.stringify(products));
-      alert('Product SVGs updated & sanitized! Reloading...');
-      loadProducts();
     }
   </script>
 </body>

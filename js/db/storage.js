@@ -70,9 +70,10 @@ const ShoporaDB = (() => {
       { id: 'admin-1', email: 'admin@shopora.com', password: 'admin123', role: 'admin', name: 'Root Admin' }
     ]);
 
-    /* ----- product SVG generator (returns inline SVG for demo imagery) ----- */
+    /* ----- product image generator (returns data URL for demo imagery) ----- */
     const svgImg = (bgColor, label, accent) => {
-      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"><rect width="300" height="300" fill="${bgColor}"/><rect x="40" y="60" width="220" height="180" rx="16" fill="${accent}" opacity="0.15"/><text x="150" y="160" text-anchor="middle" fill="${accent}" font-family="Inter,sans-serif" font-size="18" font-weight="700">${label}</text></svg>`;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"><rect width="300" height="300" fill="${bgColor}"/><rect x="40" y="60" width="220" height="180" rx="16" fill="${accent}" opacity="0.15"/><text x="150" y="160" text-anchor="middle" fill="${accent}" font-family="Inter,sans-serif" font-size="18" font-weight="700">${label}</text></svg>`;
+      return 'data:image/svg+xml,' + encodeURIComponent(svg);
     };
 
     /* ----- products ----- */
@@ -296,67 +297,6 @@ const ShoporaDB = (() => {
 
   /* run seed on load */
   seed();
-
-  const _sanitizeSvg = (raw) => {
-    if (!raw) return '';
-    let s = raw.trim();
-    const startIdx = s.toLowerCase().indexOf('<svg');
-    if (startIdx === -1) return s;
-    s = s.substring(startIdx);
-
-    try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(s, 'text/html');
-      const svg = doc.querySelector('svg');
-      if (!svg) return s;
-
-      const wAttr = svg.getAttribute('width');
-      const hAttr = svg.getAttribute('height');
-      
-      if (!svg.getAttribute('viewBox')) {
-        const w = parseFloat(wAttr) || 300;
-        const h = parseFloat(hAttr) || 300;
-        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-      }
-      
-      svg.removeAttribute('width');
-      svg.removeAttribute('height');
-      svg.setAttribute('width', '100%');
-      svg.setAttribute('height', '100%');
-      svg.style.width = '100%';
-      svg.style.height = '100%';
-      
-      return svg.outerHTML;
-    } catch (e) {
-      console.error('Error sanitizing SVG:', e);
-      return s;
-    }
-  };
-
-  const _migrateSvgs = () => {
-    const products = _get('products');
-    if (!products || !products.length) return;
-    let updated = false;
-    products.forEach(p => {
-      if (p.images && p.images.length) {
-        p.images = p.images.map(img => {
-          const sanitized = _sanitizeSvg(img);
-          if (sanitized !== img) {
-            updated = true;
-            return sanitized;
-          }
-          return img;
-        });
-      }
-    });
-    if (updated) {
-      _set('products', products);
-      console.log('ShoporaDB: Auto-migrated and sanitized SVG images in localStorage.');
-    }
-  };
-
-  /* Run migration of SVGs on load */
-  _migrateSvgs();
 
   /* ---------- public API ---------- */
   return { getAll, getById, insert, update, remove, query, count, clear, uid, getObject, setObject, setSession, getSession, clearSession, seed };

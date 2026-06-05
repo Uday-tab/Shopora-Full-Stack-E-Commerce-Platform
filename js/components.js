@@ -237,7 +237,7 @@ const Components = (() => {
       <div class="sp-card" onclick="window.location.href='${href}'" style="cursor:pointer;">
         ${product.tag ? `<span class="sp-card-badge">${product.tag}</span>` : (product.discount > 0 ? `<span class="sp-card-badge">${product.discount}% OFF</span>` : '')}
         ${removeBtn}
-        <div class="sp-card-img">${product.images && product.images[0] ? product.images[0] : ''}</div>
+        <div class="sp-card-img">${product.images && product.images[0] ? `<img src="${product.images[0]}" alt="${product.title}" style="width:100%;height:100%;object-fit:contain;">` : ''}</div>
         <div class="sp-card-body">
           <div class="sp-card-seller">${product.sellerName || product.brand}</div>
           <div class="sp-card-title">${product.title}</div>
