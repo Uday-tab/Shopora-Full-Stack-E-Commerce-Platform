@@ -20,7 +20,7 @@ const ProductService = (() => {
         case 'price-high': items.sort((a,b) => _effectivePrice(b) - _effectivePrice(a)); break;
         case 'rating':     items.sort((a,b) => _avgRating(b) - _avgRating(a)); break;
         case 'newest':     items.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)); break;
-        case 'popular':    items.sort((a,b) => b.ratings.length - a.ratings.length); break;
+        case 'popular':    items.sort((a,b) => (b.ratings||[]).length - (a.ratings||[]).length); break;
       }
     }
     return items;
@@ -102,7 +102,7 @@ const ProductService = (() => {
   };
 
   const _effectivePrice = (p) => p.discount ? +(p.price * (1 - p.discount / 100)).toFixed(2) : p.price;
-  const _avgRating = (p) => p.ratings.length ? +(p.ratings.reduce((a, b) => a + b, 0) / p.ratings.length).toFixed(1) : 0;
+  const _avgRating = (p) => (p.ratings||[]).length ? +((p.ratings||[]).reduce((a, b) => a + b, 0) / (p.ratings||[]).length).toFixed(1) : 0;
 
   const getEffectivePrice = _effectivePrice;
   const getAvgRating = _avgRating;

@@ -29,7 +29,7 @@
         </div>
         ${top.length ? `<div class="sp-table-wrap"><div class="sp-table-header"><h3>Top Products by Engagement</h3></div>
           <table class="sp-table"><thead><tr><th>Product</th><th>Avg Rating</th><th>Reviews</th><th>Stock</th></tr></thead><tbody>
-          ${top.map(p => `<tr><td style="font-weight:500;">${p.title}</td><td><span class="sp-stars">${'★'.repeat(Math.round(ProductService.getAvgRating(p)))}</span> ${ProductService.getAvgRating(p)}</td><td>${p.reviews.length}</td><td>${p.stock}</td></tr>`).join('')}
+          ${top.map(p => `<tr><td style="font-weight:500;">${p.title}</td><td><span class="sp-stars">${'★'.repeat(Math.round(ProductService.getAvgRating(p)))}</span> ${ProductService.getAvgRating(p)}</td><td>${(p.reviews||[]).length}</td><td>${p.stock}</td></tr>`).join('')}
           </tbody></table></div>` : ''}`;
 
       try {

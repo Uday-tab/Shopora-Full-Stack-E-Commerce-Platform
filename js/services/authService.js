@@ -8,6 +8,7 @@ const AuthService = (() => {
     const table = role === 'seller' ? 'sellers' : role === 'admin' ? 'admins' : 'users';
     const user = ShoporaDB.query(table, u => u.email === email && u.password === password)[0];
     if (!user) return { success: false, message: 'Invalid email or password.' };
+    if (user.status === 'banned') return { success: false, message: 'This account has been suspended. Contact support for assistance.' };
     ShoporaDB.setSession({ ...user, role });
     return { success: true, user };
   };
@@ -36,8 +37,15 @@ const AuthService = (() => {
   const updateProfile = (patch) => {
     const session = ShoporaDB.getSession();
     if (!session) return null;
+    /* Strip fields that must never be changed via profile edits */
+    const safePatch = { ...patch };
+    delete safePatch.id;
+    delete safePatch.role;
+    delete safePatch.password;
+    delete safePatch.email;
+    delete safePatch.status;
     const table = session.role === 'seller' ? 'sellers' : 'users';
-    const updated = ShoporaDB.update(table, session.id, patch);
+    const updated = ShoporaDB.update(table, session.id, safePatch);
     if (updated) ShoporaDB.setSession({ ...updated, role: session.role });
     return updated;
   };

@@ -44,7 +44,7 @@
 
         ${topProducts.length ? `<div class="sp-table-wrap"><div class="sp-table-header"><h3>Top Performing Products</h3></div>
           <table class="sp-table"><thead><tr><th>Product</th><th>Rating</th><th>Reviews</th><th>Stock</th></tr></thead><tbody>
-          ${topProducts.map(p => `<tr><td>${p.title}</td><td><span class="sp-stars">${'★'.repeat(Math.round(ProductService.getAvgRating(p)))}</span> ${ProductService.getAvgRating(p)}</td><td>${p.reviews.length}</td><td>${p.stock}</td></tr>`).join('')}
+          ${topProducts.map(p => `<tr><td>${p.title}</td><td><span class="sp-stars">${'★'.repeat(Math.round(ProductService.getAvgRating(p)))}</span> ${ProductService.getAvgRating(p)}</td><td>${(p.reviews||[]).length}</td><td>${p.stock}</td></tr>`).join('')}
           </tbody></table></div>` : ''}
       `;
 

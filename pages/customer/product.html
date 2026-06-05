@@ -82,7 +82,7 @@
         <div class="sp-pdp-info">
           <div class="sp-card-seller">${p.sellerName || p.brand}</div>
           <h1 class="sp-pdp-title">${p.title}</h1>
-          <div class="sp-pdp-rating"><span class="sp-stars" style="font-size:1.1rem;">${stars}</span> <span>${avg} out of 5</span> <span style="color:var(--text-muted);">(${p.ratings.length} ratings)</span></div>
+          <div class="sp-pdp-rating"><span class="sp-stars" style="font-size:1.1rem;">${stars}</span> <span>${avg} out of 5</span> <span style="color:var(--text-muted);">(${(p.ratings||[]).length} ratings)</span></div>
           <div style="display:flex;align-items:baseline;gap:.75rem;margin-bottom:.25rem;">
             <span class="sp-pdp-price">$${ep.toFixed(2)}</span>
             ${p.discount > 0 ? `<span class="sp-pdp-old-price">$${p.price.toFixed(2)}</span><span class="sp-pdp-discount-badge">-${p.discount}%</span>` : ''}
@@ -186,8 +186,8 @@
     function renderReviews() {
       const p = product;
       document.getElementById('pdp-reviews').innerHTML = `
-        <h3 class="sp-pdp-section-title">Customer Reviews (${p.reviews.length})</h3>
-        ${p.reviews.length ? `<div class="sp-reviews">${p.reviews.map(r => `
+        <h3 class="sp-pdp-section-title">Customer Reviews (${(p.reviews||[]).length})</h3>
+        ${(p.reviews||[]).length ? `<div class="sp-reviews">${(p.reviews||[]).map(r => `
           <div class="sp-review-card">
             <div class="sp-review-header"><span class="sp-review-user"><span class="sp-stars">${'★'.repeat(r.rating)+'☆'.repeat(5-r.rating)}</span> ${r.username}</span><span class="sp-review-date">${r.date}</span></div>
             <div class="sp-review-text">${r.comment}</div>

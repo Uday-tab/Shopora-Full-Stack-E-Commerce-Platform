@@ -241,7 +241,7 @@ const Components = (() => {
         <div class="sp-card-body">
           <div class="sp-card-seller">${product.sellerName || product.brand}</div>
           <div class="sp-card-title">${product.title}</div>
-          <div class="sp-card-rating"><span class="sp-stars">${stars}</span> (${product.ratings.length})</div>
+          <div class="sp-card-rating"><span class="sp-stars">${stars}</span> (${(product.ratings||[]).length})</div>
           <div class="sp-card-delivery">✓ Free ${product.deliveryDays || 3}-day delivery</div>
           <div class="sp-card-price-row">
             <div>
