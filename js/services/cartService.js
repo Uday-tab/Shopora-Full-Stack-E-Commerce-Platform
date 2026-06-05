@@ -1,12 +1,16 @@
 /* ============================================================
    Shopora — js/services/cartService.js
    Persistent cart management across pages.
+   Routes all data through ShoporaDB — no direct localStorage.
    ============================================================ */
 
 const CartService = (() => {
   const _key = 'shopora_cart';
-  const _get = () => { try { return JSON.parse(localStorage.getItem(_key)) || []; } catch { return []; } };
-  const _save = (cart) => localStorage.setItem(_key, JSON.stringify(cart));
+  const _get = () => {
+    const data = ShoporaDB.getObject(_key);
+    return Array.isArray(data) ? data : (data.items || []);
+  };
+  const _save = (cart) => ShoporaDB.setObject(_key, cart);
 
   const getCart = () => _get();
 
@@ -20,12 +24,16 @@ const CartService = (() => {
     if (matchIdx > -1) {
       cart[matchIdx].quantity += qty;
     } else {
-      const effectivePrice = product.discount ? +(product.price * (1 - product.discount / 100)).toFixed(2) : product.price;
-      const variantPrice = variant && variant.price ? variant.price : effectivePrice;
+      const effectivePrice = typeof ProductService !== 'undefined'
+        ? ProductService.getEffectivePrice(product)
+        : (product.discount ? +(product.price * (1 - product.discount / 100)).toFixed(2) : product.price);
+      const variantPrice = variant && variant.price
+        ? +(variant.price * (1 - (product.discount || 0) / 100)).toFixed(2)
+        : effectivePrice;
       cart.push({
         productId, title: product.title, price: product.price,
-        effectivePrice: product.discount ? +(product.price * (1 - product.discount / 100)).toFixed(2) : product.price,
-        variantPrice: variant && variant.price ? +(variant.price * (1 - (product.discount || 0) / 100)).toFixed(2) : effectivePrice,
+        effectivePrice,
+        variantPrice,
         discount: product.discount || 0,
         variant: variant ? { color: variant.color, size: variant.size, storage: variant.storage, ram: variant.ram, stock: variant.stock, price: variant.price } : null,
         quantity: qty, sellerId: product.sellerId, sellerName: product.sellerName || '',

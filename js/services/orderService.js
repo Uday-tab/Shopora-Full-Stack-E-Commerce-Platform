@@ -27,11 +27,10 @@ const OrderService = (() => {
         /* Free space by trimming old orders to last 20 */
         const allOrders = ShoporaDB.getAll('orders');
         if (allOrders.length > 20) {
-          const keep = allOrders.slice(-20);
-          localStorage.setItem('orders', JSON.stringify(keep));
+          ShoporaDB.setObject('orders', allOrders.slice(-20));
         }
-        /* Also clear old cart data */
-        localStorage.removeItem('shopora_cart');
+        /* Clear cart data to reclaim space */
+        CartService.clearCart();
         ShoporaDB.insert('orders', order);
       } else { throw e; }
     }
