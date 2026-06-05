@@ -14,7 +14,7 @@ const ShoporaDB = (() => {
   const _set = (key, data) => localStorage.setItem(key, JSON.stringify(data));
   const _uid = () => 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
 
-  /* ---------- generic CRUD ---------- */
+  /* ---------- generic CRUD (array-based tables) ---------- */
   const getAll = (table) => _get(table);
   const getById = (table, id) => _get(table).find(r => r.id === id) || null;
   const insert = (table, record) => { const rows = _get(table); record.id = record.id || _uid(); rows.push(record); _set(table, rows); return record; };
@@ -24,6 +24,13 @@ const ShoporaDB = (() => {
   const count = (table) => _get(table).length;
   const clear = (table) => _set(table, []);
   const uid = _uid;
+
+  /* ---------- single-object storage (for analytics, settings, etc.) ---------- */
+  const getObject = (key) => {
+    try { return JSON.parse(localStorage.getItem(key)) || {}; }
+    catch { return {}; }
+  };
+  const setObject = (key, obj) => localStorage.setItem(key, JSON.stringify(obj));
 
   /* ---------- session (active logged-in user) ---------- */
   const setSession = (user) => sessionStorage.setItem('shopora_session', JSON.stringify(user));
@@ -352,5 +359,5 @@ const ShoporaDB = (() => {
   _migrateSvgs();
 
   /* ---------- public API ---------- */
-  return { getAll, getById, insert, update, remove, query, count, clear, uid, setSession, getSession, clearSession, seed };
+  return { getAll, getById, insert, update, remove, query, count, clear, uid, getObject, setObject, setSession, getSession, clearSession, seed };
 })();

@@ -65,7 +65,7 @@ const AnalyticsService = (() => {
   };
 
   const getPlatformStats = () => {
-    const a = JSON.parse(localStorage.getItem('analytics')) || {};
+    const a = ShoporaDB.getObject('analytics');
     return {
       totalRevenue: a.totalRevenue || 0,
       totalOrders: ShoporaDB.count('orders'),

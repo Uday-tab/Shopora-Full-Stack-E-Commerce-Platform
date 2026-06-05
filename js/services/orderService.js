@@ -62,13 +62,10 @@ const OrderService = (() => {
     });
 
     /* update global analytics */
-    const analytics = ShoporaDB.getAll('analytics') || {};
-    if (typeof analytics === 'object' && !Array.isArray(analytics)) {
-      const a = JSON.parse(localStorage.getItem('analytics')) || {};
-      a.totalOrders = (a.totalOrders || 0) + 1;
-      a.totalRevenue = +(((a.totalRevenue || 0) + order.total)).toFixed(2);
-      localStorage.setItem('analytics', JSON.stringify(a));
-    }
+    const analytics = ShoporaDB.getObject('analytics');
+    analytics.totalOrders = (analytics.totalOrders || 0) + 1;
+    analytics.totalRevenue = +(((analytics.totalRevenue || 0) + order.total)).toFixed(2);
+    ShoporaDB.setObject('analytics', analytics);
 
     return order;
   };
