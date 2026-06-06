@@ -30,11 +30,12 @@ const AdminService = (() => {
 
   const removeReview = (productId, reviewIndex) => {
     const p = ShoporaDB.getById('products', productId);
-    if (p && p.reviews[reviewIndex]) {
-      const removedRating = p.reviews[reviewIndex].rating;
+    if (p && (p.reviews||[])[reviewIndex]) {
       p.reviews.splice(reviewIndex, 1);
-      const rIdx = p.ratings.indexOf(removedRating);
-      if (rIdx > -1) p.ratings.splice(rIdx, 1);
+      /* ratings array is parallel to reviews — remove by same index */
+      if (p.ratings && p.ratings.length > reviewIndex) {
+        p.ratings.splice(reviewIndex, 1);
+      }
       ShoporaDB.update('products', productId, { reviews: p.reviews, ratings: p.ratings });
     }
   };
