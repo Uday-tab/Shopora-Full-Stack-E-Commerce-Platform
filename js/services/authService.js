@@ -15,8 +15,11 @@ const AuthService = (() => {
 
   const register = (data, role = 'customer') => {
     const table = role === 'seller' ? 'sellers' : 'users';
-    const existing = ShoporaDB.query(table, u => u.email === data.email);
-    if (existing.length) return { success: false, message: 'An account with this email already exists.' };
+    /* Check email uniqueness across ALL tables to prevent cross-role duplicates */
+    const emailTaken = ['users', 'sellers', 'admins'].some(t =>
+      ShoporaDB.query(t, u => u.email === data.email).length > 0
+    );
+    if (emailTaken) return { success: false, message: 'An account with this email already exists.' };
 
     let record;
     if (role === 'seller') {
