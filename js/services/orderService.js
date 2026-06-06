@@ -40,9 +40,15 @@ const OrderService = (() => {
       const product = ShoporaDB.getById('products', item.productId);
       if (product) {
         const newStock = Math.max(0, (product.stock || 0) - item.quantity);
-        /* reduce variant stock too */
+        /* reduce variant stock too — match on ALL variant fields */
         if (item.variant && product.variants) {
-          const vi = product.variants.findIndex(v => v.color === item.variant.color && v.size === item.variant.size);
+          const _match = (a, b) => (!a || a === 'N/A') && (!b || b === 'N/A') || a === b;
+          const vi = product.variants.findIndex(v =>
+            _match(v.color, item.variant.color) &&
+            _match(v.size, item.variant.size) &&
+            _match(v.storage, item.variant.storage) &&
+            _match(v.ram, item.variant.ram)
+          );
           if (vi > -1) product.variants[vi].stock = Math.max(0, product.variants[vi].stock - item.quantity);
         }
         ShoporaDB.update('products', product.id, { stock: newStock, variants: product.variants });
