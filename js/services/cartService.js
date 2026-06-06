@@ -19,11 +19,16 @@ const CartService = (() => {
     const product = ShoporaDB.getById('products', productId);
     if (!product) return cart;
 
+    /* Determine available stock — variant-level if selected, else product-level */
+    const maxStock = (variant && typeof variant.stock === 'number') ? variant.stock : (product.stock || 0);
+
     const matchIdx = cart.findIndex(item => item.productId === productId && JSON.stringify(item.variant) === JSON.stringify(variant));
 
     if (matchIdx > -1) {
-      cart[matchIdx].quantity += qty;
+      const newQty = cart[matchIdx].quantity + qty;
+      cart[matchIdx].quantity = Math.min(newQty, maxStock);
     } else {
+      if (maxStock <= 0) return cart; /* out of stock */
       const effectivePrice = typeof ProductService !== 'undefined'
         ? ProductService.getEffectivePrice(product)
         : (product.discount ? +(product.price * (1 - product.discount / 100)).toFixed(2) : product.price);
@@ -36,7 +41,7 @@ const CartService = (() => {
         variantPrice,
         discount: product.discount || 0,
         variant: variant ? { color: variant.color, size: variant.size, storage: variant.storage, ram: variant.ram, stock: variant.stock, price: variant.price } : null,
-        quantity: qty, sellerId: product.sellerId, sellerName: product.sellerName || '',
+        quantity: Math.min(qty, maxStock), sellerId: product.sellerId, sellerName: product.sellerName || '',
         deliveryDays: product.deliveryDays || 3
       });
     }
@@ -47,7 +52,17 @@ const CartService = (() => {
   const updateQuantity = (index, qty) => {
     const cart = _get();
     if (index < 0 || index >= cart.length) return cart;
-    if (qty <= 0) { cart.splice(index, 1); } else { cart[index].quantity = qty; }
+    if (qty <= 0) {
+      cart.splice(index, 1);
+    } else {
+      /* Cap at available stock */
+      const item = cart[index];
+      const product = ShoporaDB.getById('products', item.productId);
+      const maxStock = product
+        ? ((item.variant && typeof item.variant.stock === 'number') ? item.variant.stock : (product.stock || 0))
+        : qty;
+      cart[index].quantity = Math.min(qty, maxStock);
+    }
     _save(cart);
     return cart;
   };
