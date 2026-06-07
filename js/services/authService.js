@@ -6,7 +6,8 @@
 const AuthService = (() => {
   const login = (email, password, role = 'customer') => {
     const table = role === 'seller' ? 'sellers' : role === 'admin' ? 'admins' : 'users';
-    const user = ShoporaDB.query(table, u => u.email === email && u.password === password)[0];
+    const hashed = ShoporaDB.hashPassword(password);
+    const user = ShoporaDB.query(table, u => u.email === email && u.password === hashed)[0];
     if (!user) return { success: false, message: 'Invalid email or password.' };
     if (user.status === 'banned') return { success: false, message: 'This account has been suspended. Contact support for assistance.' };
     ShoporaDB.setSession({ ...user, role });
@@ -22,10 +23,11 @@ const AuthService = (() => {
     if (emailTaken) return { success: false, message: 'An account with this email already exists.' };
 
     let record;
+    const hashedPw = ShoporaDB.hashPassword(data.password);
     if (role === 'seller') {
-      record = { id: ShoporaDB.uid(), email: data.email, password: data.password, role: 'seller', companyName: data.companyName || '', revenue: 0, productsCount: 0, status: 'active', joinDate: new Date().toISOString().slice(0,10) };
+      record = { id: ShoporaDB.uid(), email: data.email, password: hashedPw, role: 'seller', companyName: data.companyName || '', revenue: 0, productsCount: 0, status: 'active', joinDate: new Date().toISOString().slice(0,10) };
     } else {
-      record = { id: ShoporaDB.uid(), email: data.email, password: data.password, role: 'customer', name: data.name || '', addresses: [], wishlist: [], recentlyViewed: [], notifications: [] };
+      record = { id: ShoporaDB.uid(), email: data.email, password: hashedPw, role: 'customer', name: data.name || '', addresses: [], wishlist: [], recentlyViewed: [], notifications: [] };
     }
     ShoporaDB.insert(table, record);
     ShoporaDB.setSession({ ...record, role });

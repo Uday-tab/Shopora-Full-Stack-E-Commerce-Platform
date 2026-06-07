@@ -14,6 +14,29 @@ const ShoporaDB = (() => {
   const _set = (key, data) => localStorage.setItem(key, JSON.stringify(data));
   const _uid = () => 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
 
+  /* ---------- password hashing (synchronous, salted FNV-1a) ---------- */
+  const _hashPw = (pw) => {
+    if (!pw) return '';
+    const salt = 'shopora_salt_v1';
+    const str = salt + ':' + pw;
+    let h1 = 0x811c9dc5 >>> 0;
+    let h2 = 0xcbf29ce4 >>> 0;
+    let h3 = 0x6c62272e >>> 0;
+    for (let i = 0; i < str.length; i++) {
+      const c = str.charCodeAt(i);
+      h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
+      h2 = Math.imul(h2 ^ c, 0x100001b3) >>> 0;
+      h3 = Math.imul(h3 ^ c, 0x01000289) >>> 0;
+    }
+    /* second pass (reversed) for better avalanche effect */
+    for (let i = str.length - 1; i >= 0; i--) {
+      const c = str.charCodeAt(i);
+      h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
+      h2 = Math.imul(h2 ^ c, 0x100001b3) >>> 0;
+    }
+    return h1.toString(16).padStart(8, '0') + h2.toString(16).padStart(8, '0') + h3.toString(16).padStart(8, '0');
+  };
+
   /* ---------- generic CRUD (array-based tables) ---------- */
   const getAll = (table) => _get(table);
   const getById = (table, id) => _get(table).find(r => r.id === id) || null;
@@ -33,7 +56,12 @@ const ShoporaDB = (() => {
   const setObject = (key, obj) => localStorage.setItem(key, JSON.stringify(obj));
 
   /* ---------- session (active logged-in user) ---------- */
-  const setSession = (user) => sessionStorage.setItem('shopora_session', JSON.stringify(user));
+  const setSession = (user) => {
+    /* Never store password in session */
+    const safe = { ...user };
+    delete safe.password;
+    sessionStorage.setItem('shopora_session', JSON.stringify(safe));
+  };
   const getSession = () => { try { return JSON.parse(sessionStorage.getItem('shopora_session')); } catch { return null; } };
   const clearSession = () => sessionStorage.removeItem('shopora_session');
 
@@ -46,12 +74,12 @@ const ShoporaDB = (() => {
     /* ----- users ----- */
     const users = [
       {
-        id: 'user-1', email: 'user@shopora.com', password: 'user123', role: 'customer', name: 'Jane Doe',
+        id: 'user-1', email: 'user@shopora.com', password: _hashPw('user123'), role: 'customer', name: 'Jane Doe',
         addresses: [{ label: 'Home', line1: '742 Evergreen Terrace', city: 'Seattle', state: 'WA', zip: '98101', phone: '555-0101' }],
         wishlist: [], recentlyViewed: [], notifications: []
       },
       {
-        id: 'user-2', email: 'alex@shopora.com', password: 'alex123', role: 'customer', name: 'Alex Park',
+        id: 'user-2', email: 'alex@shopora.com', password: _hashPw('alex123'), role: 'customer', name: 'Alex Park',
         addresses: [], wishlist: [], recentlyViewed: [], notifications: []
       }
     ];
@@ -59,15 +87,15 @@ const ShoporaDB = (() => {
 
     /* ----- sellers ----- */
     const sellers = [
-      { id: 'seller-1', email: 'seller@shopora.com', password: 'seller123', role: 'seller', companyName: 'Apex Technologies', revenue: 12480, productsCount: 0, status: 'active', joinDate: '2026-01-15' },
-      { id: 'seller-2', email: 'nova@shopora.com', password: 'nova123', role: 'seller', companyName: 'Nova Home Co.', revenue: 8920, productsCount: 0, status: 'active', joinDate: '2026-03-22' },
-      { id: 'seller-3', email: 'threadline@shopora.com', password: 'thread123', role: 'seller', companyName: 'Threadline Apparel', revenue: 5200, productsCount: 0, status: 'active', joinDate: '2026-04-10' }
+      { id: 'seller-1', email: 'seller@shopora.com', password: _hashPw('seller123'), role: 'seller', companyName: 'Apex Technologies', revenue: 12480, productsCount: 0, status: 'active', joinDate: '2026-01-15' },
+      { id: 'seller-2', email: 'nova@shopora.com', password: _hashPw('nova123'), role: 'seller', companyName: 'Nova Home Co.', revenue: 8920, productsCount: 0, status: 'active', joinDate: '2026-03-22' },
+      { id: 'seller-3', email: 'threadline@shopora.com', password: _hashPw('thread123'), role: 'seller', companyName: 'Threadline Apparel', revenue: 5200, productsCount: 0, status: 'active', joinDate: '2026-04-10' }
     ];
     _set('sellers', sellers);
 
     /* ----- admins ----- */
     _set('admins', [
-      { id: 'admin-1', email: 'admin@shopora.com', password: 'admin123', role: 'admin', name: 'Root Admin' }
+      { id: 'admin-1', email: 'admin@shopora.com', password: _hashPw('admin123'), role: 'admin', name: 'Root Admin' }
     ]);
 
     /* ----- product image generator (returns data URL for demo imagery) ----- */
@@ -299,5 +327,5 @@ const ShoporaDB = (() => {
   seed();
 
   /* ---------- public API ---------- */
-  return { getAll, getById, insert, update, remove, query, count, clear, uid, getObject, setObject, setSession, getSession, clearSession, seed };
+  return { getAll, getById, insert, update, remove, query, count, clear, uid, getObject, setObject, hashPassword: _hashPw, setSession, getSession, clearSession, seed };
 })();
