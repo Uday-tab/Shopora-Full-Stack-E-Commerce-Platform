@@ -14,27 +14,31 @@
       Components.injectSellerSidebar();
 
       editId = new URLSearchParams(window.location.search).get('edit');
+      let editProduct = null;
       if (editId) {
-        const p = ProductService.getById(editId);
-        if (p) {
-          tags = p.tags || []; features = p.features || [];
-          specs = Object.entries(p.specifications || {}).map(([k,v]) => ({key:k,val:v}));
-          variants = p.variants || []; images = p.images || [];
-          setTimeout(() => {
-            document.getElementById('p-title').value = p.title;
-            document.getElementById('p-desc').value = p.description;
-            document.getElementById('p-brand').value = p.brand;
-            document.getElementById('p-category').value = p.category;
-            document.getElementById('p-subcat').value = p.subcategory || '';
-            document.getElementById('p-price').value = p.price;
-            document.getElementById('p-discount').value = p.discount || 0;
-            document.getElementById('p-sku').value = p.id;
-            document.getElementById('p-delivery').value = p.deliveryDays || 3;
-            renderTags(); renderFeatures(); renderSpecs(); renderVariants(); renderPreview();
-          }, 100);
+        editProduct = ProductService.getById(editId);
+        if (editProduct) {
+          tags = editProduct.tags || []; features = editProduct.features || [];
+          specs = Object.entries(editProduct.specifications || {}).map(([k,v]) => ({key:k,val:v}));
+          variants = editProduct.variants || []; images = editProduct.images || [];
         }
       }
+
+      /* Render form first (creates DOM elements), then populate fields */
       renderForm();
+
+      if (editProduct) {
+        document.getElementById('p-title').value = editProduct.title;
+        document.getElementById('p-desc').value = editProduct.description;
+        document.getElementById('p-brand').value = editProduct.brand;
+        document.getElementById('p-category').value = editProduct.category;
+        document.getElementById('p-subcat').value = editProduct.subcategory || '';
+        document.getElementById('p-price').value = editProduct.price;
+        document.getElementById('p-discount').value = editProduct.discount || 0;
+        document.getElementById('p-sku').value = editProduct.id;
+        document.getElementById('p-delivery').value = editProduct.deliveryDays || 3;
+        renderTags(); renderFeatures(); renderSpecs(); renderVariants(); renderPreview();
+      }
     });
 
     function renderForm() {
