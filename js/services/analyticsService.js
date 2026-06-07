@@ -31,7 +31,11 @@ const AnalyticsService = (() => {
     const months = {};
     orders.forEach(o => {
       const m = o.date ? o.date.slice(0, 7) : 'Unknown';
-      months[m] = (months[m] || 0) + (o.total || 0);
+      /* Sum only items belonging to THIS seller, not the full order total */
+      const sellerTotal = (o.items || [])
+        .filter(item => item.sellerId === sellerId)
+        .reduce((sum, item) => sum + (item.variantPrice || item.effectivePrice || item.price) * (item.quantity || 1), 0);
+      months[m] = (months[m] || 0) + sellerTotal;
     });
     const labels = Object.keys(months).sort();
     const data = labels.map(l => +months[l].toFixed(2));
