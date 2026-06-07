@@ -58,8 +58,22 @@
     function placeOrder() {
       const cart = CartService.getCart();
       const user = AuthService.getCurrentUser();
-      const addr = { name: document.getElementById('co-name').value, line1: document.getElementById('co-addr').value, city: document.getElementById('co-city').value, state: document.getElementById('co-state').value, zip: document.getElementById('co-zip').value, phone: document.getElementById('co-phone').value };
-      if (!addr.name || !addr.line1 || !addr.city) { Toast.show('Please fill all address fields.','warn'); return; }
+      const addr = { name: document.getElementById('co-name').value.trim(), line1: document.getElementById('co-addr').value.trim(), city: document.getElementById('co-city').value.trim(), state: document.getElementById('co-state').value.trim(), zip: document.getElementById('co-zip').value.trim(), phone: document.getElementById('co-phone').value.trim() };
+
+      /* Validate all shipping fields */
+      if (!addr.name || !addr.line1 || !addr.city || !addr.state || !addr.zip || !addr.phone) {
+        Toast.show('Please fill all shipping address fields.','warn'); return;
+      }
+      if (addr.zip.length < 3) { Toast.show('Please enter a valid ZIP code.','warn'); return; }
+      if (addr.phone.replace(/\D/g, '').length < 7) { Toast.show('Please enter a valid phone number.','warn'); return; }
+
+      /* Validate payment fields */
+      const card = document.getElementById('co-card').value.replace(/\s/g, '');
+      const exp = document.getElementById('co-exp').value.trim();
+      const cvv = document.getElementById('co-cvv').value.trim();
+      if (!card || card.length < 13) { Toast.show('Please enter a valid card number.','warn'); return; }
+      if (!exp || !/^\d{2}\/\d{2}$/.test(exp)) { Toast.show('Please enter expiry in MM/YY format.','warn'); return; }
+      if (!cvv || cvv.length < 3) { Toast.show('Please enter a valid CVV.','warn'); return; }
 
       const subtotal = CartService.getSubtotal(); const tax = +(subtotal*.08).toFixed(2); const total = +(subtotal+tax).toFixed(2);
       // Group items by seller for individual orders
