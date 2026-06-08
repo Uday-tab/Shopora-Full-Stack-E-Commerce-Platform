@@ -466,15 +466,15 @@ const Components = (() => {
         </div>
         <div>
           <h4>Support</h4>
-          <a href="#">Help Center</a>
-          <a href="#">Returns</a>
-          <a href="#">Shipping</a>
+          <a href="javascript:void(0)" onclick="const msg='Support pages are not implemented in this educational demo.'; if(typeof Toast!=='undefined'){Toast.show(msg,'info');}else{alert(msg);}">Help Center</a>
+          <a href="javascript:void(0)" onclick="const msg='Returns/Exchange portal is not active in this demo.'; if(typeof Toast!=='undefined'){Toast.show(msg,'info');}else{alert(msg);}">Returns</a>
+          <a href="javascript:void(0)" onclick="const msg='Shipping policy document is placeholder only.'; if(typeof Toast!=='undefined'){Toast.show(msg,'info');}else{alert(msg);}">Shipping</a>
         </div>
         <div>
           <h4>Company</h4>
-          <a href="#">About</a>
-          <a href="#">Careers</a>
-          <a href="#">Privacy</a>
+          <a href="javascript:void(0)" onclick="const msg='Shopora is an educational e-commerce demonstration project.'; if(typeof Toast!=='undefined'){Toast.show(msg,'info');}else{alert(msg);}">About</a>
+          <a href="javascript:void(0)" onclick="const msg='Careers portal is inactive.'; if(typeof Toast!=='undefined'){Toast.show(msg,'info');}else{alert(msg);}">Careers</a>
+          <a href="javascript:void(0)" onclick="const msg='Privacy Policy statement is a placeholder.'; if(typeof Toast!=='undefined'){Toast.show(msg,'info');}else{alert(msg);}">Privacy</a>
         </div>
       </div>
       <div class="sp-footer-bottom">
