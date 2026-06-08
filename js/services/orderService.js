@@ -43,8 +43,6 @@ const OrderService = (() => {
         if (allOrders.length > 20) {
           ShoporaDB.setObject('orders', allOrders.slice(-20));
         }
-        /* Clear cart data to reclaim space */
-        CartService.clearCart();
         ShoporaDB.insert('orders', order);
       } else {
         throw e;
