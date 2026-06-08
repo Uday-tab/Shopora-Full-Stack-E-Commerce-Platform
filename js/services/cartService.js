@@ -16,6 +16,13 @@ const CartService = (() => {
 
   const getCart = () => _get();
 
+  const _variantsEqual = (v1, v2) => {
+    if (!v1 && !v2) return true;
+    if (!v1 || !v2) return false;
+    const keys = ['color', 'size', 'storage', 'ram'];
+    return keys.every(k => v1[k] === v2[k]);
+  };
+
   const addToCart = (productId, variant = null, qty = 1) => {
     const cart = _get();
     const product = ShoporaDB.getById('products', productId);
@@ -28,7 +35,7 @@ const CartService = (() => {
 
     const matchIdx = cart.findIndex(item =>
       item.productId === productId &&
-      JSON.stringify(item.variant) === JSON.stringify(variant)
+      _variantsEqual(item.variant, variant)
     );
 
     if (matchIdx > -1) {
