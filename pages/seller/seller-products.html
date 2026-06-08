@@ -1,12 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>My Products — Shopora</title><link rel="stylesheet" href="../../css/style.css"></head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>My Products — Shopora</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
 <body>
-  <div class="sp-page-grid"><main class="sp-container" id="products-content"></main></div>
-  <script src="../../js/db/storage.js"></script><script src="../../js/services/authService.js"></script><script src="../../js/services/productService.js"></script><script src="../../js/services/cartService.js"></script><script src="../../js/services/orderService.js"></script><script src="../../js/services/analyticsService.js"></script><script src="../../js/services/adminService.js"></script><script src="../../js/utils/logger.js"></script><script src="../../js/utils/toast.js"></script><script src="../../js/utils/chartHelper.js"></script><script src="../../js/components.js"></script>
+  <div class="sp-page-grid">
+    <main class="sp-container" id="products-content"></main>
+  </div>
+
+  <script src="../../js/db/storage.js"></script>
+  <script src="../../js/services/authService.js"></script>
+  <script src="../../js/services/productService.js"></script>
+  <script src="../../js/services/cartService.js"></script>
+  <script src="../../js/services/orderService.js"></script>
+  <script src="../../js/services/analyticsService.js"></script>
+  <script src="../../js/services/adminService.js"></script>
+  <script src="../../js/utils/logger.js"></script>
+  <script src="../../js/utils/toast.js"></script>
+  <script src="../../js/utils/chartHelper.js"></script>
+  <script src="../../js/components.js"></script>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       if (!AuthService.hasRole('seller')) { window.location.href = 'seller-login.html'; return; }
+
       Components.injectDashboardHeader('seller');
       Components.injectSellerSidebar();
       renderProducts();
@@ -15,31 +35,82 @@
     function renderProducts(search = '') {
       const seller = AuthService.getCurrentUser();
       let products = ProductService.getAllIncludingDrafts(seller.id);
-      if (search) products = products.filter(p => p.title.toLowerCase().includes(search.toLowerCase()));
+
+      if (search) {
+        products = products.filter(p => p.title.toLowerCase().includes(search.toLowerCase()));
+      }
 
       document.getElementById('products-content').innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
           <h2 style="font-size:1.3rem;font-weight:700;">My Products (${products.length})</h2>
           <div style="display:flex;gap:.75rem;">
-            <input type="text" id="prod-search" placeholder="Search products..." value="${search}" oninput="renderProducts(this.value)" style="padding:.5rem .85rem;border:1px solid var(--border);border-radius:var(--radius);font-size:.85rem;width:220px;">
+            <input
+              type="text"
+              id="prod-search"
+              placeholder="Search products..."
+              value="${search}"
+              oninput="renderProducts(this.value)"
+              style="padding:.5rem .85rem;border:1px solid var(--border);border-radius:var(--radius);font-size:.85rem;width:220px;"
+            >
             <a href="seller-add-product.html" class="sp-btn sp-btn-primary">+ Add Product</a>
           </div>
         </div>
-        ${products.length ? `<div class="sp-table-wrap"><table class="sp-table"><thead><tr><th>Image</th><th>Title</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead><tbody>
-        ${products.map(p => `<tr>
-          <td><div class="sp-table-img"><img src="${p.images&&p.images[0]?p.images[0]:''}" alt="${p.title}" style="width:100%;height:100%;object-fit:contain;"></div></td>
-          <td style="font-weight:500;max-width:250px;">${p.title}</td>
-          <td>$${p.price.toFixed(2)}${p.discount ? ` <span style="color:var(--accent);font-size:.75rem;">-${p.discount}%</span>` : ''}</td>
-          <td><span class="sp-badge ${p.stock===0?'sp-badge-danger':p.stock<10?'sp-badge-warning':'sp-badge-success'}">${p.stock} units</span></td>
-          <td><span class="sp-badge ${p.status==='published'?'sp-badge-success':'sp-badge-info'}">${p.status}</span></td>
-          <td>
-            <div style="display:flex;gap:.4rem;">
-              <a href="seller-add-product.html?edit=${p.id}" class="sp-btn sp-btn-outline" style="padding:.3rem .6rem;font-size:.75rem;">Edit</a>
-              <button class="sp-btn sp-btn-danger" style="padding:.3rem .6rem;font-size:.75rem;" onclick="deleteProduct('${p.id}')">Delete</button>
-            </div>
-          </td>
-        </tr>`).join('')}
-        </tbody></table></div>` : '<div class="sp-empty"><div class="sp-empty-icon">📦</div><h3>No products yet</h3><p>Add your first product to start selling.</p></div>'}
+
+        ${products.length ? `<div class="sp-table-wrap">
+          <table class="sp-table">
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Title</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${products.map(p => `<tr>
+                <td>
+                  <div class="sp-table-img">
+                    <img
+                      src="${p.images&&p.images[0]?p.images[0]:''}"
+                      alt="${p.title}"
+                      style="width:100%;height:100%;object-fit:contain;"
+                    >
+                  </div>
+                </td>
+                <td style="font-weight:500;max-width:250px;">${p.title}</td>
+                <td>
+                  $${p.price.toFixed(2)}${p.discount ? ` <span style="color:var(--accent);font-size:.75rem;">-${p.discount}%</span>` : ''}
+                </td>
+                <td>
+                  <span class="sp-badge ${p.stock===0?'sp-badge-danger':p.stock<10?'sp-badge-warning':'sp-badge-success'}">
+                    ${p.stock} units
+                  </span>
+                </td>
+                <td>
+                  <span class="sp-badge ${p.status==='published'?'sp-badge-success':'sp-badge-info'}">
+                    ${p.status}
+                  </span>
+                </td>
+                <td>
+                  <div style="display:flex;gap:.4rem;">
+                    <a
+                      href="seller-add-product.html?edit=${p.id}"
+                      class="sp-btn sp-btn-outline"
+                      style="padding:.3rem .6rem;font-size:.75rem;"
+                    >Edit</a>
+                    <button
+                      class="sp-btn sp-btn-danger"
+                      style="padding:.3rem .6rem;font-size:.75rem;"
+                      onclick="deleteProduct('${p.id}')"
+                    >Delete</button>
+                  </div>
+                </td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>` : '<div class="sp-empty"><div class="sp-empty-icon">📦</div><h3>No products yet</h3><p>Add your first product to start selling.</p></div>'}
       `;
     }
 

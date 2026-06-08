@@ -1,24 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Seller Portal — Shopora</title><link rel="stylesheet" href="../../css/style.css"></head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Seller Portal — Shopora</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
 <body>
   <div class="sp-auth-container">
     <div class="sp-auth-card">
       <h1>Seller Portal</h1>
       <p class="subtitle">Sign in to manage your store</p>
-      <div class="sp-form-group"><label>Email</label><input type="email" id="s-email" value="seller@shopora.com"></div>
-      <div class="sp-form-group"><label>Password</label><input type="password" id="s-pass" value="seller123"></div>
+
+      <div class="sp-form-group">
+        <label>Email</label>
+        <input type="email" id="s-email" value="seller@shopora.com">
+      </div>
+
+      <div class="sp-form-group">
+        <label>Password</label>
+        <input type="password" id="s-pass" value="seller123">
+      </div>
+
       <button class="sp-btn sp-btn-primary sp-btn-block" onclick="doLogin()">Sign In</button>
+
       <p class="sp-auth-link">New seller? <a href="seller-signup.html">Register your business</a></p>
-      <p style="text-align:center;font-size:.75rem;color:var(--text-muted);margin-top:1rem;">Demo: seller@shopora.com / seller123</p>
+
+      <p style="text-align:center;font-size:.75rem;color:var(--text-muted);margin-top:1rem;">
+        Demo: seller@shopora.com / seller123
+      </p>
     </div>
   </div>
-  <script src="../../js/db/storage.js"></script><script src="../../js/services/authService.js"></script><script src="../../js/services/productService.js"></script><script src="../../js/services/cartService.js"></script><script src="../../js/services/orderService.js"></script><script src="../../js/services/analyticsService.js"></script><script src="../../js/services/adminService.js"></script><script src="../../js/utils/logger.js"></script><script src="../../js/utils/toast.js"></script><script src="../../js/utils/chartHelper.js"></script><script src="../../js/components.js"></script>
+
+  <script src="../../js/db/storage.js"></script>
+  <script src="../../js/services/authService.js"></script>
+  <script src="../../js/services/productService.js"></script>
+  <script src="../../js/services/cartService.js"></script>
+  <script src="../../js/services/orderService.js"></script>
+  <script src="../../js/services/analyticsService.js"></script>
+  <script src="../../js/services/adminService.js"></script>
+  <script src="../../js/utils/logger.js"></script>
+  <script src="../../js/utils/toast.js"></script>
+  <script src="../../js/utils/chartHelper.js"></script>
+  <script src="../../js/components.js"></script>
+
   <script>
     function doLogin() {
-      const r = AuthService.login(document.getElementById('s-email').value, document.getElementById('s-pass').value, 'seller');
-      if (r.success) { Toast.show('Welcome!','success'); setTimeout(() => window.location.href='seller-dashboard.html',600); }
-      else Toast.show(r.message,'error');
+      const r = AuthService.login(
+        document.getElementById('s-email').value,
+        document.getElementById('s-pass').value,
+        'seller'
+      );
+
+      if (r.success) {
+        Toast.show('Welcome!', 'success');
+        setTimeout(() => window.location.href = 'seller-dashboard.html', 600);
+      } else {
+        Toast.show(r.message, 'error');
+      }
     }
   </script>
 </body>

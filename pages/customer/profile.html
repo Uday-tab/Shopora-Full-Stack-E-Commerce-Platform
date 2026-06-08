@@ -1,16 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>My Account — Shopora</title><link rel="stylesheet" href="../../css/style.css"></head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>My Account — Shopora</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
 <body>
   <div class="sp-container" id="profile-page"></div>
-  <script src="../../js/db/storage.js"></script><script src="../../js/services/authService.js"></script><script src="../../js/services/productService.js"></script><script src="../../js/services/cartService.js"></script><script src="../../js/services/orderService.js"></script><script src="../../js/services/analyticsService.js"></script><script src="../../js/services/adminService.js"></script><script src="../../js/utils/logger.js"></script><script src="../../js/utils/toast.js"></script><script src="../../js/utils/chartHelper.js"></script><script src="../../js/components.js"></script>
+
+  <script src="../../js/db/storage.js"></script>
+  <script src="../../js/services/authService.js"></script>
+  <script src="../../js/services/productService.js"></script>
+  <script src="../../js/services/cartService.js"></script>
+  <script src="../../js/services/orderService.js"></script>
+  <script src="../../js/services/analyticsService.js"></script>
+  <script src="../../js/services/adminService.js"></script>
+  <script src="../../js/utils/logger.js"></script>
+  <script src="../../js/utils/toast.js"></script>
+  <script src="../../js/utils/chartHelper.js"></script>
+  <script src="../../js/components.js"></script>
+
   <script>
     const _validTabs = ['orders', 'wishlist', 'addresses', 'settings'];
     const _paramTab = new URLSearchParams(window.location.search).get('tab');
     let activeTab = _validTabs.includes(_paramTab) ? _paramTab : 'orders';
+
     document.addEventListener('DOMContentLoaded', () => {
-      Components.injectCustomerNav(); Components.injectFooter();
-      if (!AuthService.isLoggedIn()) { Toast.show('Please sign in to view your account.','warn'); setTimeout(() => window.location.href = 'login.html', 1500); return; }
+      Components.injectCustomerNav();
+      Components.injectFooter();
+
+      if (!AuthService.isLoggedIn()) {
+        Toast.show('Please sign in to view your account.', 'warn');
+        setTimeout(() => window.location.href = 'login.html', 1500);
+        return;
+      }
+
       render();
     });
 
@@ -20,51 +45,152 @@
         <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:1.5rem;">My Account</h2>
         <div class="sp-profile-grid">
           <nav class="sp-profile-nav">
-            <a href="#" class="${activeTab==='orders'?'active':''}" onclick="event.preventDefault();switchTab('orders')">📦 Orders</a>
-            <a href="#" class="${activeTab==='wishlist'?'active':''}" onclick="event.preventDefault();switchTab('wishlist')">♡ Wishlist</a>
-            <a href="#" class="${activeTab==='addresses'?'active':''}" onclick="event.preventDefault();switchTab('addresses')">📍 Addresses</a>
-            <a href="#" class="${activeTab==='settings'?'active':''}" onclick="event.preventDefault();switchTab('settings')">⚙ Settings</a>
-            <a href="#" onclick="event.preventDefault();AuthService.logout();window.location.href='login.html';" style="color:var(--danger);margin-top:1rem;">Logout</a>
+            <a href="#"
+              class="${activeTab === 'orders' ? 'active' : ''}"
+              onclick="event.preventDefault();switchTab('orders')">
+              📦 Orders
+            </a>
+            <a href="#"
+              class="${activeTab === 'wishlist' ? 'active' : ''}"
+              onclick="event.preventDefault();switchTab('wishlist')">
+              ♡ Wishlist
+            </a>
+            <a href="#"
+              class="${activeTab === 'addresses' ? 'active' : ''}"
+              onclick="event.preventDefault();switchTab('addresses')">
+              📍 Addresses
+            </a>
+            <a href="#"
+              class="${activeTab === 'settings' ? 'active' : ''}"
+              onclick="event.preventDefault();switchTab('settings')">
+              ⚙ Settings
+            </a>
+            <a href="#"
+              onclick="event.preventDefault();AuthService.logout();window.location.href='login.html';"
+              style="color:var(--danger);margin-top:1rem;">
+              Logout
+            </a>
           </nav>
           <div id="tab-content"></div>
         </div>`;
       renderTab();
     }
 
-    function switchTab(tab) { activeTab = tab; render(); }
+    function switchTab(tab) {
+      activeTab = tab;
+      render();
+    }
 
     function renderTab() {
       const user = AuthService.getCurrentUser();
       const el = document.getElementById('tab-content');
+
       if (activeTab === 'orders') {
         const orders = OrderService.getOrdersByUser(user.id);
         el.innerHTML = `<h3 style="margin-bottom:1rem;">Order History</h3>` +
-          (!orders.length ? '<div class="sp-empty"><div class="sp-empty-icon">📦</div><h3>No orders yet</h3></div>' :
-          `<div class="sp-table-wrap"><table class="sp-table"><thead><tr><th>Order ID</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th></tr></thead><tbody>
-          ${orders.map(o => `<tr><td style="font-family:monospace;font-size:.8rem;">${o.id}</td><td>${o.date}</td><td>${o.items.length} item(s)</td><td>$${o.total.toFixed(2)}</td>
-          <td><span class="sp-badge ${o.status==='delivered'?'sp-badge-success':o.status==='shipped'?'sp-badge-info':'sp-badge-warning'}">${o.status}</span></td></tr>`).join('')}
-          </tbody></table></div>`);
+          (!orders.length
+            ? '<div class="sp-empty"><div class="sp-empty-icon">📦</div><h3>No orders yet</h3></div>'
+            : `<div class="sp-table-wrap">
+                 <table class="sp-table">
+                   <thead>
+                     <tr>
+                       <th>Order ID</th>
+                       <th>Date</th>
+                       <th>Items</th>
+                       <th>Total</th>
+                       <th>Status</th>
+                     </tr>
+                   </thead>
+                   <tbody>
+                     ${orders.map(o => `
+                       <tr>
+                         <td style="font-family:monospace;font-size:.8rem;">${o.id}</td>
+                         <td>${o.date}</td>
+                         <td>${o.items.length} item(s)</td>
+                         <td>$${o.total.toFixed(2)}</td>
+                         <td>
+                           <span class="sp-badge ${
+                             o.status === 'delivered' ? 'sp-badge-success'
+                             : o.status === 'shipped' ? 'sp-badge-info'
+                             : 'sp-badge-warning'
+                           }">
+                             ${o.status}
+                           </span>
+                         </td>
+                       </tr>
+                     `).join('')}
+                   </tbody>
+                 </table>
+               </div>`);
+
       } else if (activeTab === 'wishlist') {
-        const wl = (user.wishlist || []).map(id => ProductService.getById(id)).filter(Boolean);
+        const wl = (user.wishlist || [])
+          .map(id => ProductService.getById(id))
+          .filter(Boolean);
         el.innerHTML = `<h3 style="margin-bottom:1rem;">Wishlist</h3>` +
-          (!wl.length ? '<div class="sp-empty"><div class="sp-empty-icon">♡</div><h3>Wishlist is empty</h3></div>' :
-          `<div class="sp-product-grid">${wl.map(p => Components.renderProductCard(p, '', true)).join('')}</div>`);
+          (!wl.length
+            ? '<div class="sp-empty"><div class="sp-empty-icon">♡</div><h3>Wishlist is empty</h3></div>'
+            : `<div class="sp-product-grid">
+                 ${wl.map(p => Components.renderProductCard(p, '', true)).join('')}
+               </div>`);
+
       } else if (activeTab === 'addresses') {
         const addrs = user.addresses || [];
-        el.innerHTML = `<h3 style="margin-bottom:1rem;">Saved Addresses</h3>
-          ${addrs.map((a,i) => `<div class="sp-form-card"><strong>${a.label||'Address '+(i+1)}</strong><p style="margin-top:.25rem;color:var(--text-md);font-size:.9rem;">${a.line1}, ${a.city}, ${a.state} ${a.zip}</p></div>`).join('')}
-          <div class="sp-form-card"><h3>Add New Address</h3>
-            <div class="sp-form-group"><label>Label</label><input id="addr-label" placeholder="Home / Office"></div>
-            <div class="sp-form-group"><label>Address</label><input id="addr-line"></div>
-            <div class="sp-form-row"><div class="sp-form-group"><label>City</label><input id="addr-city"></div><div class="sp-form-group"><label>State</label><input id="addr-state"></div></div>
-            <div class="sp-form-row"><div class="sp-form-group"><label>ZIP</label><input id="addr-zip"></div><div class="sp-form-group"><label>Phone</label><input id="addr-phone"></div></div>
+        el.innerHTML = `
+          <h3 style="margin-bottom:1rem;">Saved Addresses</h3>
+          ${addrs.map((a, i) => `
+            <div class="sp-form-card">
+              <strong>${a.label || 'Address ' + (i + 1)}</strong>
+              <p style="margin-top:.25rem;color:var(--text-md);font-size:.9rem;">
+                ${a.line1}, ${a.city}, ${a.state} ${a.zip}
+              </p>
+            </div>
+          `).join('')}
+          <div class="sp-form-card">
+            <h3>Add New Address</h3>
+            <div class="sp-form-group">
+              <label>Label</label>
+              <input id="addr-label" placeholder="Home / Office">
+            </div>
+            <div class="sp-form-group">
+              <label>Address</label>
+              <input id="addr-line">
+            </div>
+            <div class="sp-form-row">
+              <div class="sp-form-group">
+                <label>City</label>
+                <input id="addr-city">
+              </div>
+              <div class="sp-form-group">
+                <label>State</label>
+                <input id="addr-state">
+              </div>
+            </div>
+            <div class="sp-form-row">
+              <div class="sp-form-group">
+                <label>ZIP</label>
+                <input id="addr-zip">
+              </div>
+              <div class="sp-form-group">
+                <label>Phone</label>
+                <input id="addr-phone">
+              </div>
+            </div>
             <button class="sp-btn sp-btn-primary" onclick="addAddress()">Save Address</button>
           </div>`;
+
       } else if (activeTab === 'settings') {
-        el.innerHTML = `<h3 style="margin-bottom:1rem;">Account Settings</h3>
+        el.innerHTML = `
+          <h3 style="margin-bottom:1rem;">Account Settings</h3>
           <div class="sp-form-card">
-            <div class="sp-form-group"><label>Full Name</label><input id="set-name" value="${user.name||''}"></div>
-            <div class="sp-form-group"><label>Email</label><input id="set-email" value="${user.email||''}" disabled style="opacity:.6;"></div>
+            <div class="sp-form-group">
+              <label>Full Name</label>
+              <input id="set-name" value="${user.name || ''}">
+            </div>
+            <div class="sp-form-group">
+              <label>Email</label>
+              <input id="set-email" value="${user.email || ''}" disabled style="opacity:.6;">
+            </div>
             <button class="sp-btn sp-btn-primary" onclick="saveSettings()">Save Changes</button>
           </div>`;
       }
@@ -72,18 +198,30 @@
 
     function addAddress() {
       const user = AuthService.getCurrentUser();
-      const addr = { label: document.getElementById('addr-label').value, line1: document.getElementById('addr-line').value, city: document.getElementById('addr-city').value, state: document.getElementById('addr-state').value, zip: document.getElementById('addr-zip').value, phone: document.getElementById('addr-phone').value };
-      if (!addr.line1 || !addr.city) { Toast.show('Please fill address fields.','warn'); return; }
+      const addr = {
+        label: document.getElementById('addr-label').value,
+        line1: document.getElementById('addr-line').value,
+        city: document.getElementById('addr-city').value,
+        state: document.getElementById('addr-state').value,
+        zip: document.getElementById('addr-zip').value,
+        phone: document.getElementById('addr-phone').value
+      };
+
+      if (!addr.line1 || !addr.city) {
+        Toast.show('Please fill address fields.', 'warn');
+        return;
+      }
+
       const addrs = user.addresses || [];
       addrs.push(addr);
       AuthService.updateProfile({ addresses: addrs });
-      Toast.show('Address saved!','success');
+      Toast.show('Address saved!', 'success');
       render();
     }
 
     function saveSettings() {
       AuthService.updateProfile({ name: document.getElementById('set-name').value });
-      Toast.show('Settings saved!','success');
+      Toast.show('Settings saved!', 'success');
     }
 
     function removeFromWishlist(id) {

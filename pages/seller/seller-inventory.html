@@ -1,45 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Inventory — Shopora Seller</title><link rel="stylesheet" href="../../css/style.css"></head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Inventory — Shopora Seller</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
 <body>
-  <div class="sp-page-grid"><main class="sp-container" id="inv-content"></main></div>
-  <script src="../../js/db/storage.js"></script><script src="../../js/services/authService.js"></script><script src="../../js/services/productService.js"></script><script src="../../js/services/cartService.js"></script><script src="../../js/services/orderService.js"></script><script src="../../js/services/analyticsService.js"></script><script src="../../js/services/adminService.js"></script><script src="../../js/utils/logger.js"></script><script src="../../js/utils/toast.js"></script><script src="../../js/utils/chartHelper.js"></script><script src="../../js/components.js"></script>
+  <div class="sp-page-grid">
+    <main class="sp-container" id="inv-content"></main>
+  </div>
+
+  <script src="../../js/db/storage.js"></script>
+  <script src="../../js/services/authService.js"></script>
+  <script src="../../js/services/productService.js"></script>
+  <script src="../../js/services/cartService.js"></script>
+  <script src="../../js/services/orderService.js"></script>
+  <script src="../../js/services/analyticsService.js"></script>
+  <script src="../../js/services/adminService.js"></script>
+  <script src="../../js/utils/logger.js"></script>
+  <script src="../../js/utils/toast.js"></script>
+  <script src="../../js/utils/chartHelper.js"></script>
+  <script src="../../js/components.js"></script>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       if (!AuthService.hasRole('seller')) { window.location.href = 'seller-login.html'; return; }
-      Components.injectDashboardHeader('seller'); Components.injectSellerSidebar(); renderInv();
+
+      Components.injectDashboardHeader('seller');
+      Components.injectSellerSidebar();
+      renderInv();
     });
+
     function renderInv() {
       const seller = AuthService.getCurrentUser();
       const products = ProductService.getAllIncludingDrafts(seller.id);
-      const total = products.reduce((s,p) => s + p.stock, 0);
+      const total = products.reduce((s, p) => s + p.stock, 0);
       const low = products.filter(p => p.stock > 0 && p.stock < 10).length;
       const out = products.filter(p => p.stock === 0).length;
 
       document.getElementById('inv-content').innerHTML = `
         <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:1.5rem;">Inventory Management</h2>
+
         <div class="sp-stats-grid">
-          <div class="sp-stat-card"><div class="sp-stat-label">Total SKUs</div><div class="sp-stat-value">${products.length}</div></div>
-          <div class="sp-stat-card"><div class="sp-stat-label">Total Units</div><div class="sp-stat-value">${total}</div></div>
-          <div class="sp-stat-card"><div class="sp-stat-label">Low Stock</div><div class="sp-stat-value" style="color:var(--star);">${low}</div></div>
-          <div class="sp-stat-card"><div class="sp-stat-label">Out of Stock</div><div class="sp-stat-value" style="color:var(--danger);">${out}</div></div>
+          <div class="sp-stat-card">
+            <div class="sp-stat-label">Total SKUs</div>
+            <div class="sp-stat-value">${products.length}</div>
+          </div>
+          <div class="sp-stat-card">
+            <div class="sp-stat-label">Total Units</div>
+            <div class="sp-stat-value">${total}</div>
+          </div>
+          <div class="sp-stat-card">
+            <div class="sp-stat-label">Low Stock</div>
+            <div class="sp-stat-value" style="color:var(--star);">${low}</div>
+          </div>
+          <div class="sp-stat-card">
+            <div class="sp-stat-label">Out of Stock</div>
+            <div class="sp-stat-value" style="color:var(--danger);">${out}</div>
+          </div>
         </div>
-        ${products.length ? `<div class="sp-table-wrap"><table class="sp-table"><thead><tr><th>Product</th><th>Current Stock</th><th>Status</th><th>Update Stock</th></tr></thead><tbody>
-        ${products.map(p => `<tr>
-          <td style="font-weight:500;">${p.title}</td>
-          <td>${p.stock}</td>
-          <td><span class="sp-badge ${p.stock===0?'sp-badge-danger':p.stock<10?'sp-badge-warning':'sp-badge-success'}">${p.stock===0?'Out of Stock':p.stock<10?'Low Stock':'In Stock'}</span></td>
-          <td><div style="display:flex;gap:.4rem;align-items:center;">
-            <input type="number" id="stock-${p.id}" value="${p.stock}" min="0" style="width:80px;padding:.35rem .5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:.85rem;">
-            <button class="sp-btn sp-btn-primary" style="padding:.35rem .6rem;font-size:.75rem;" onclick="updateStock('${p.id}')">Update</button>
-          </div></td>
-        </tr>`).join('')}</tbody></table></div>` : '<div class="sp-empty"><div class="sp-empty-icon">📦</div><h3>No products</h3></div>'}`;
+
+        ${products.length ? `<div class="sp-table-wrap">
+          <table class="sp-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Current Stock</th>
+                <th>Status</th>
+                <th>Update Stock</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${products.map(p => `<tr>
+                <td style="font-weight:500;">${p.title}</td>
+                <td>${p.stock}</td>
+                <td>
+                  <span class="sp-badge ${p.stock===0?'sp-badge-danger':p.stock<10?'sp-badge-warning':'sp-badge-success'}">
+                    ${p.stock===0?'Out of Stock':p.stock<10?'Low Stock':'In Stock'}
+                  </span>
+                </td>
+                <td>
+                  <div style="display:flex;gap:.4rem;align-items:center;">
+                    <input
+                      type="number"
+                      id="stock-${p.id}"
+                      value="${p.stock}"
+                      min="0"
+                      style="width:80px;padding:.35rem .5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:.85rem;"
+                    >
+                    <button
+                      class="sp-btn sp-btn-primary"
+                      style="padding:.35rem .6rem;font-size:.75rem;"
+                      onclick="updateStock('${p.id}')"
+                    >Update</button>
+                  </div>
+                </td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>` : '<div class="sp-empty"><div class="sp-empty-icon">📦</div><h3>No products</h3></div>'}
+      `;
     }
+
     function updateStock(id) {
-      const val = parseInt(document.getElementById('stock-'+id).value);
-      if (isNaN(val) || val < 0) { Toast.show('Invalid stock value.','warn'); return; }
+      const val = parseInt(document.getElementById('stock-' + id).value);
+      if (isNaN(val) || val < 0) { Toast.show('Invalid stock value.', 'warn'); return; }
+
       ProductService.updateProduct(id, { stock: val });
-      Toast.show('Stock updated!','success');
+      Toast.show('Stock updated!', 'success');
       renderInv();
     }
   </script>

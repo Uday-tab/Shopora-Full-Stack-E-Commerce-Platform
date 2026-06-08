@@ -1,28 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Sign In — Shopora</title><link rel="stylesheet" href="../../css/style.css"></head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Sign In — Shopora</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
 <body>
   <div class="sp-auth-container">
     <div class="sp-auth-card">
       <h1>Welcome Back</h1>
       <p class="subtitle">Sign in to your Shopora account</p>
-      <div class="sp-form-group"><label>Email</label><input type="email" id="login-email" value="user@shopora.com"></div>
-      <div class="sp-form-group"><label>Password</label><input type="password" id="login-pass" value="user123"></div>
-      <button class="sp-btn sp-btn-primary sp-btn-block" onclick="doLogin()" style="margin-top:.5rem;">Sign In</button>
-      <p class="sp-auth-link"><a href="forgot-password.html">Forgot password?</a></p>
-      <p class="sp-auth-link">New to Shopora? <a href="signup.html">Create an account</a></p>
-      <p style="text-align:center;font-size:.75rem;color:var(--text-muted);margin-top:1rem;">Demo: user@shopora.com / user123</p>
+
+      <div class="sp-form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" value="user@shopora.com">
+      </div>
+
+      <div class="sp-form-group">
+        <label>Password</label>
+        <input type="password" id="login-pass" value="user123">
+      </div>
+
+      <button
+        class="sp-btn sp-btn-primary sp-btn-block"
+        onclick="doLogin()"
+        style="margin-top:.5rem;">
+        Sign In
+      </button>
+
+      <p class="sp-auth-link">
+        <a href="forgot-password.html">Forgot password?</a>
+      </p>
+      <p class="sp-auth-link">
+        New to Shopora? <a href="signup.html">Create an account</a>
+      </p>
+      <p style="text-align:center;font-size:.75rem;color:var(--text-muted);margin-top:1rem;">
+        Demo: user@shopora.com / user123
+      </p>
     </div>
   </div>
-  <script src="../../js/db/storage.js"></script><script src="../../js/services/authService.js"></script><script src="../../js/services/productService.js"></script><script src="../../js/services/cartService.js"></script><script src="../../js/services/orderService.js"></script><script src="../../js/services/analyticsService.js"></script><script src="../../js/services/adminService.js"></script><script src="../../js/utils/logger.js"></script><script src="../../js/utils/toast.js"></script><script src="../../js/utils/chartHelper.js"></script><script src="../../js/components.js"></script>
+
+  <script src="../../js/db/storage.js"></script>
+  <script src="../../js/services/authService.js"></script>
+  <script src="../../js/services/productService.js"></script>
+  <script src="../../js/services/cartService.js"></script>
+  <script src="../../js/services/orderService.js"></script>
+  <script src="../../js/services/analyticsService.js"></script>
+  <script src="../../js/services/adminService.js"></script>
+  <script src="../../js/utils/logger.js"></script>
+  <script src="../../js/utils/toast.js"></script>
+  <script src="../../js/utils/chartHelper.js"></script>
+  <script src="../../js/components.js"></script>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      Components.injectCustomerNav(); Components.injectFooter();
+      Components.injectCustomerNav();
+      Components.injectFooter();
     });
+
     function doLogin() {
-      const r = AuthService.login(document.getElementById('login-email').value, document.getElementById('login-pass').value, 'customer');
-      if (r.success) { Toast.show('Welcome back!','success'); setTimeout(() => window.location.href = 'index.html', 800); }
-      else Toast.show(r.message, 'error');
+      const r = AuthService.login(
+        document.getElementById('login-email').value,
+        document.getElementById('login-pass').value,
+        'customer'
+      );
+      if (r.success) {
+        Toast.show('Welcome back!', 'success');
+        setTimeout(() => window.location.href = 'index.html', 800);
+      } else {
+        Toast.show(r.message, 'error');
+      }
     }
   </script>
 </body>

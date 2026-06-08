@@ -1,35 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Create Account — Shopora</title><link rel="stylesheet" href="../../css/style.css"></head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Create Account — Shopora</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
 <body>
   <div class="sp-auth-container">
     <div class="sp-auth-card">
       <h1>Create Account</h1>
       <p class="subtitle">Join Shopora today</p>
-      <div class="sp-form-group"><label>Full Name</label><input id="reg-name" placeholder="Jane Doe"></div>
-      <div class="sp-form-group"><label>Email</label><input type="email" id="reg-email" placeholder="you@example.com"></div>
-      <div class="sp-form-group"><label>Password</label><input type="password" id="reg-pass" placeholder="Min 4 characters"></div>
-      <div class="sp-form-group"><label>Confirm Password</label><input type="password" id="reg-pass2" placeholder="Repeat password"></div>
-      <button class="sp-btn sp-btn-primary sp-btn-block" onclick="doRegister()">Create Account</button>
-      <p class="sp-auth-link">Already have an account? <a href="login.html">Sign In</a></p>
+
+      <div class="sp-form-group">
+        <label>Full Name</label>
+        <input id="reg-name" placeholder="Jane Doe">
+      </div>
+
+      <div class="sp-form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="you@example.com">
+      </div>
+
+      <div class="sp-form-group">
+        <label>Password</label>
+        <input type="password" id="reg-pass" placeholder="Min 4 characters">
+      </div>
+
+      <div class="sp-form-group">
+        <label>Confirm Password</label>
+        <input type="password" id="reg-pass2" placeholder="Repeat password">
+      </div>
+
+      <button class="sp-btn sp-btn-primary sp-btn-block" onclick="doRegister()">
+        Create Account
+      </button>
+
+      <p class="sp-auth-link">
+        Already have an account? <a href="login.html">Sign In</a>
+      </p>
     </div>
   </div>
-  <script src="../../js/db/storage.js"></script><script src="../../js/services/authService.js"></script><script src="../../js/services/productService.js"></script><script src="../../js/services/cartService.js"></script><script src="../../js/services/orderService.js"></script><script src="../../js/services/analyticsService.js"></script><script src="../../js/services/adminService.js"></script><script src="../../js/utils/logger.js"></script><script src="../../js/utils/toast.js"></script><script src="../../js/utils/chartHelper.js"></script><script src="../../js/components.js"></script>
+
+  <script src="../../js/db/storage.js"></script>
+  <script src="../../js/services/authService.js"></script>
+  <script src="../../js/services/productService.js"></script>
+  <script src="../../js/services/cartService.js"></script>
+  <script src="../../js/services/orderService.js"></script>
+  <script src="../../js/services/analyticsService.js"></script>
+  <script src="../../js/services/adminService.js"></script>
+  <script src="../../js/utils/logger.js"></script>
+  <script src="../../js/utils/toast.js"></script>
+  <script src="../../js/utils/chartHelper.js"></script>
+  <script src="../../js/components.js"></script>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      Components.injectCustomerNav(); Components.injectFooter();
+      Components.injectCustomerNav();
+      Components.injectFooter();
     });
+
     function doRegister() {
       const name = document.getElementById('reg-name').value.trim();
       const email = document.getElementById('reg-email').value.trim();
       const pass = document.getElementById('reg-pass').value;
       const pass2 = document.getElementById('reg-pass2').value;
-      if (!name || !email || !pass) { Toast.show('Please fill all fields.','warn'); return; }
-      if (pass !== pass2) { Toast.show('Passwords do not match.','error'); return; }
-      if (pass.length < 4) { Toast.show('Password must be at least 4 characters.','warn'); return; }
+
+      if (!name || !email || !pass) {
+        Toast.show('Please fill all fields.', 'warn');
+        return;
+      }
+      if (pass !== pass2) {
+        Toast.show('Passwords do not match.', 'error');
+        return;
+      }
+      if (pass.length < 4) {
+        Toast.show('Password must be at least 4 characters.', 'warn');
+        return;
+      }
+
       const r = AuthService.register({ name, email, password: pass }, 'customer');
-      if (r.success) { Toast.show('Account created!','success'); setTimeout(() => window.location.href = 'index.html', 800); }
-      else Toast.show(r.message, 'error');
+      if (r.success) {
+        Toast.show('Account created!', 'success');
+        setTimeout(() => window.location.href = 'index.html', 800);
+      } else {
+        Toast.show(r.message, 'error');
+      }
     }
   </script>
 </body>

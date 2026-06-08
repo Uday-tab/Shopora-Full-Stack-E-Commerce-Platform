@@ -1,30 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Shopora — Premium Online Shopping</title>
   <link rel="stylesheet" href="../../css/style.css">
 </head>
 <body>
   <div class="sp-container" id="page-content">
+
     <!-- Hero -->
     <div class="sp-hero">
-      <h1>Shop Smarter.<br>Live Better<span class="dot" style="color:var(--accent)">.</span></h1>
-      <p>Discover trending electronics, smart home devices, premium apparel, and more — all with fast, free delivery and trusted seller partnerships.</p>
+      <h1>
+        Shop Smarter.<br>Live Better<span class="dot" style="color:var(--accent)">.</span>
+      </h1>
+      <p>
+        Discover trending electronics, smart home devices, premium apparel,
+        and more — all with fast, free delivery and trusted seller partnerships.
+      </p>
       <a href="search.html" class="sp-hero-btn">Explore All Products →</a>
     </div>
 
     <!-- Categories -->
-    <div class="sp-section-header"><h2 class="sp-section-title">Browse by Category</h2></div>
+    <div class="sp-section-header">
+      <h2 class="sp-section-title">Browse by Category</h2>
+    </div>
     <div class="sp-cats" id="home-cats"></div>
 
     <!-- Trending -->
-    <div class="sp-section-header"><h2 class="sp-section-title">Trending Products</h2><a href="search.html" class="sp-section-link">View All →</a></div>
+    <div class="sp-section-header">
+      <h2 class="sp-section-title">Trending Products</h2>
+      <a href="search.html" class="sp-section-link">View All →</a>
+    </div>
     <div class="sp-product-grid" id="trending-grid"></div>
 
     <!-- Recommendations -->
     <div id="rec-section" style="display:none;">
-      <div class="sp-section-header"><h2 class="sp-section-title">Recommended For You</h2></div>
+      <div class="sp-section-header">
+        <h2 class="sp-section-title">Recommended For You</h2>
+      </div>
       <div class="sp-product-grid" id="rec-grid"></div>
     </div>
 
@@ -33,16 +47,23 @@
       <div class="sp-promo-card">
         <div class="sp-promo-tag">Seller Portal</div>
         <div class="sp-promo-title">Start Selling on Shopora</div>
-        <div class="sp-promo-desc">Join thousands of retailers. Upload products, manage inventory, and track revenue — all from your dashboard.</div>
+        <div class="sp-promo-desc">
+          Join thousands of retailers. Upload products, manage inventory,
+          and track revenue — all from your dashboard.
+        </div>
         <a href="../seller/seller-signup.html" class="sp-promo-btn">Become a Seller →</a>
       </div>
       <div class="sp-promo-card">
         <div class="sp-promo-tag">Tech Deals</div>
         <div class="sp-promo-title">Up to 25% Off Electronics</div>
-        <div class="sp-promo-desc">Premium laptops, keyboards, headphones, and monitors from top-rated sellers with verified reviews.</div>
+        <div class="sp-promo-desc">
+          Premium laptops, keyboards, headphones, and monitors
+          from top-rated sellers with verified reviews.
+        </div>
         <a href="search.html?category=electronics" class="sp-promo-btn">Shop Electronics →</a>
       </div>
     </div>
+
   </div>
 
   <script src="../../js/db/storage.js"></script>
@@ -56,14 +77,23 @@
   <script src="../../js/utils/toast.js"></script>
   <script src="../../js/utils/chartHelper.js"></script>
   <script src="../../js/components.js"></script>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       Components.injectCustomerNav();
       Components.injectFooter();
 
       // Categories
-      const cats = [{label:'All',val:'all'},{label:'Electronics',val:'electronics'},{label:'Smart Home',val:'smarthome'},{label:'Apparel',val:'apparel'},{label:'Books',val:'books'}];
+      const cats = [
+        { label: 'All',         val: 'all' },
+        { label: 'Electronics', val: 'electronics' },
+        { label: 'Smart Home',  val: 'smarthome' },
+        { label: 'Apparel',     val: 'apparel' },
+        { label: 'Books',       val: 'books' }
+      ];
+
       const catsEl = document.getElementById('home-cats');
+
       cats.forEach(c => {
         const btn = document.createElement('button');
         btn.className = 'sp-cat-chip' + (c.val === 'all' ? ' active' : '');
@@ -77,9 +107,13 @@
       });
 
       function renderTrending(cat) {
-        const products = cat === 'all' ? ProductService.getAll() : ProductService.getAll({category: cat});
-        document.getElementById('trending-grid').innerHTML = products.map(p => Components.renderProductCard(p)).join('');
+        const products = cat === 'all'
+          ? ProductService.getAll()
+          : ProductService.getAll({ category: cat });
+        document.getElementById('trending-grid').innerHTML =
+          products.map(p => Components.renderProductCard(p)).join('');
       }
+
       renderTrending('all');
 
       // Recommendations based on recently viewed
@@ -89,7 +123,8 @@
         recSection.style.display = 'block';
         const lastViewed = user.recentlyViewed[user.recentlyViewed.length - 1];
         const recs = ProductService.getRecommendations(lastViewed, 4);
-        document.getElementById('rec-grid').innerHTML = recs.map(p => Components.renderProductCard(p)).join('');
+        document.getElementById('rec-grid').innerHTML =
+          recs.map(p => Components.renderProductCard(p)).join('');
       }
     });
   </script>

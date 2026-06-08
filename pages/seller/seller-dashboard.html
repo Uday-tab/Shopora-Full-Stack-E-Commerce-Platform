@@ -1,15 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Seller Dashboard — Shopora</title><link rel="stylesheet" href="../../css/style.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script></head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Seller Dashboard — Shopora</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
 <body>
-  <div class="sp-page-grid"><main class="sp-container" id="dash-content"></main></div>
-  <script src="../../js/db/storage.js"></script><script src="../../js/services/authService.js"></script><script src="../../js/services/productService.js"></script><script src="../../js/services/cartService.js"></script><script src="../../js/services/orderService.js"></script><script src="../../js/services/analyticsService.js"></script><script src="../../js/services/adminService.js"></script><script src="../../js/utils/logger.js"></script><script src="../../js/utils/toast.js"></script><script src="../../js/utils/chartHelper.js"></script><script src="../../js/components.js"></script>
+  <div class="sp-page-grid">
+    <main class="sp-container" id="dash-content"></main>
+  </div>
+
+  <script src="../../js/db/storage.js"></script>
+  <script src="../../js/services/authService.js"></script>
+  <script src="../../js/services/productService.js"></script>
+  <script src="../../js/services/cartService.js"></script>
+  <script src="../../js/services/orderService.js"></script>
+  <script src="../../js/services/analyticsService.js"></script>
+  <script src="../../js/services/adminService.js"></script>
+  <script src="../../js/utils/logger.js"></script>
+  <script src="../../js/utils/toast.js"></script>
+  <script src="../../js/utils/chartHelper.js"></script>
+  <script src="../../js/components.js"></script>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       if (!AuthService.hasRole('seller')) { window.location.href = 'seller-login.html'; return; }
+
       Components.injectDashboardHeader('seller');
       Components.injectSellerSidebar();
+
       const seller = AuthService.getCurrentUser();
       const stats = AnalyticsService.getSellerStats(seller.id);
       const orders = OrderService.getOrdersBySeller(seller.id);
@@ -18,43 +39,116 @@
 
       document.getElementById('dash-content').innerHTML = `
         <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:1.5rem;">Dashboard Overview</h2>
+
         <div class="sp-stats-grid">
-          <div class="sp-stat-card"><div class="sp-stat-label">Revenue</div><div class="sp-stat-value" style="color:var(--success);">$${stats.revenue.toLocaleString()}</div><div class="sp-stat-sub">Lifetime earnings</div></div>
-          <div class="sp-stat-card"><div class="sp-stat-label">Products</div><div class="sp-stat-value">${stats.totalProducts}</div><div class="sp-stat-sub">${stats.publishedProducts} published, ${stats.draftProducts} drafts</div></div>
-          <div class="sp-stat-card"><div class="sp-stat-label">Orders</div><div class="sp-stat-value">${stats.totalOrders}</div><div class="sp-stat-sub">${stats.pendingOrders} pending</div></div>
-          <div class="sp-stat-card"><div class="sp-stat-label">Low Stock</div><div class="sp-stat-value" style="color:${stats.lowStockCount?'var(--danger)':'var(--success)'};">${stats.lowStockCount}</div><div class="sp-stat-sub">${stats.lowStockCount ? 'Items need restock' : 'All stocked'}</div></div>
+          <div class="sp-stat-card">
+            <div class="sp-stat-label">Revenue</div>
+            <div class="sp-stat-value" style="color:var(--success);">$${stats.revenue.toLocaleString()}</div>
+            <div class="sp-stat-sub">Lifetime earnings</div>
+          </div>
+          <div class="sp-stat-card">
+            <div class="sp-stat-label">Products</div>
+            <div class="sp-stat-value">${stats.totalProducts}</div>
+            <div class="sp-stat-sub">${stats.publishedProducts} published, ${stats.draftProducts} drafts</div>
+          </div>
+          <div class="sp-stat-card">
+            <div class="sp-stat-label">Orders</div>
+            <div class="sp-stat-value">${stats.totalOrders}</div>
+            <div class="sp-stat-sub">${stats.pendingOrders} pending</div>
+          </div>
+          <div class="sp-stat-card">
+            <div class="sp-stat-label">Low Stock</div>
+            <div class="sp-stat-value" style="color:${stats.lowStockCount?'var(--danger)':'var(--success)'};">
+              ${stats.lowStockCount}
+            </div>
+            <div class="sp-stat-sub">${stats.lowStockCount ? 'Items need restock' : 'All stocked'}</div>
+          </div>
         </div>
 
         <div class="sp-charts-row">
-          <div class="sp-chart-card"><h4>Revenue Overview</h4><div class="sp-chart-wrap"><canvas id="revenue-chart"></canvas></div></div>
-          <div class="sp-chart-card"><h4>Order Status</h4><div class="sp-chart-wrap"><canvas id="status-chart"></canvas></div></div>
+          <div class="sp-chart-card">
+            <h4>Revenue Overview</h4>
+            <div class="sp-chart-wrap"><canvas id="revenue-chart"></canvas></div>
+          </div>
+          <div class="sp-chart-card">
+            <h4>Order Status</h4>
+            <div class="sp-chart-wrap"><canvas id="status-chart"></canvas></div>
+          </div>
         </div>
 
         <div class="sp-table-wrap" style="margin-bottom:1.5rem;">
           <div class="sp-table-header"><h3>Recent Orders</h3></div>
-          <table class="sp-table"><thead><tr><th>Order ID</th><th>Items</th><th>Total</th><th>Date</th><th>Status</th></tr></thead><tbody>
-          ${recentOrders.length ? recentOrders.map(o => `<tr>
-            <td style="font-family:monospace;font-size:.8rem;">${o.id}</td>
-            <td>${o.items.map(i => i.title.slice(0,25)).join(', ')}</td>
-            <td>$${o.total.toFixed(2)}</td><td>${o.date}</td>
-            <td><span class="sp-badge ${o.status==='delivered'?'sp-badge-success':o.status==='shipped'?'sp-badge-info':'sp-badge-warning'}">${o.status}</span></td>
-          </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No orders yet</td></tr>'}
-          </tbody></table>
+          <table class="sp-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${recentOrders.length ? recentOrders.map(o => `<tr>
+                <td style="font-family:monospace;font-size:.8rem;">${o.id}</td>
+                <td>${o.items.map(i => i.title.slice(0,25)).join(', ')}</td>
+                <td>$${o.total.toFixed(2)}</td>
+                <td>${o.date}</td>
+                <td>
+                  <span class="sp-badge ${o.status==='delivered'?'sp-badge-success':o.status==='shipped'?'sp-badge-info':'sp-badge-warning'}">
+                    ${o.status}
+                  </span>
+                </td>
+              </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No orders yet</td></tr>'}
+            </tbody>
+          </table>
         </div>
 
-        ${topProducts.length ? `<div class="sp-table-wrap"><div class="sp-table-header"><h3>Top Performing Products</h3></div>
-          <table class="sp-table"><thead><tr><th>Product</th><th>Rating</th><th>Reviews</th><th>Stock</th></tr></thead><tbody>
-          ${topProducts.map(p => `<tr><td>${p.title}</td><td><span class="sp-stars">${'★'.repeat(Math.round(ProductService.getAvgRating(p)))}</span> ${ProductService.getAvgRating(p)}</td><td>${(p.reviews||[]).length}</td><td>${p.stock}</td></tr>`).join('')}
-          </tbody></table></div>` : ''}
+        ${topProducts.length ? `<div class="sp-table-wrap">
+          <div class="sp-table-header"><h3>Top Performing Products</h3></div>
+          <table class="sp-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Rating</th>
+                <th>Reviews</th>
+                <th>Stock</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${topProducts.map(p => `<tr>
+                <td>${p.title}</td>
+                <td>
+                  <span class="sp-stars">${'★'.repeat(Math.round(ProductService.getAvgRating(p)))}</span>
+                  ${ProductService.getAvgRating(p)}
+                </td>
+                <td>${(p.reviews||[]).length}</td>
+                <td>${p.stock}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>` : ''}
       `;
 
       // Charts
       try {
         const revData = AnalyticsService.getSellerRevenueChart(seller.id);
-        if (revData.labels.length) ChartHelper.createBar('revenue-chart', revData.labels, revData.data, 'Revenue ($)', '#ea580c');
-        else document.querySelector('#revenue-chart').parentElement.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem;">No revenue data yet</p>';
-        ChartHelper.createDoughnut('status-chart', ['Pending','Shipped','Delivered'], [stats.pendingOrders, stats.shippedOrders, stats.deliveredOrders]);
-      } catch(e) { console.warn('Charts unavailable:', e.message); }
+
+        if (revData.labels.length) {
+          ChartHelper.createBar('revenue-chart', revData.labels, revData.data, 'Revenue ($)', '#ea580c');
+        } else {
+          document.querySelector('#revenue-chart').parentElement.innerHTML =
+            '<p style="text-align:center;color:var(--text-muted);padding:2rem;">No revenue data yet</p>';
+        }
+
+        ChartHelper.createDoughnut(
+          'status-chart',
+          ['Pending', 'Shipped', 'Delivered'],
+          [stats.pendingOrders, stats.shippedOrders, stats.deliveredOrders]
+        );
+      } catch(e) {
+        console.warn('Charts unavailable:', e.message);
+      }
     });
   </script>
 </body>

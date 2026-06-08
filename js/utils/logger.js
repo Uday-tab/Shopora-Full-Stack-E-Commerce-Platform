@@ -7,7 +7,14 @@ const Logger = (() => {
   const _key = 'shopora_logs';
   const _max = 80;
 
-  const _getLogs = () => { try { return JSON.parse(sessionStorage.getItem(_key)) || []; } catch { return []; } };
+  const _getLogs = () => {
+    try {
+      return JSON.parse(sessionStorage.getItem(_key)) || [];
+    } catch {
+      return [];
+    }
+  };
+
   const _save = (logs) => sessionStorage.setItem(_key, JSON.stringify(logs));
 
   const log = (type, message) => {
@@ -24,10 +31,22 @@ const Logger = (() => {
   const error   = (msg) => log('ERROR', msg);
 
   const getLogs = _getLogs;
-  const clear = () => { _save([]); _dispatch('INFO', 'Log stream cleared.'); };
+
+  const clear = () => {
+    _save([]);
+    _dispatch('INFO', 'Log stream cleared.');
+  };
 
   const _dispatch = (type, message) => {
-    window.dispatchEvent(new CustomEvent('shopora-log', { detail: { type, message, time: new Date().toLocaleTimeString() } }));
+    window.dispatchEvent(
+      new CustomEvent('shopora-log', {
+        detail: {
+          type,
+          message,
+          time: new Date().toLocaleTimeString()
+        }
+      })
+    );
   };
 
   return { log, info, success, warn, error, getLogs, clear };

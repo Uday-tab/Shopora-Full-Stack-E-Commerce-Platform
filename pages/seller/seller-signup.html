@@ -1,30 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Become a Seller — Shopora</title><link rel="stylesheet" href="../../css/style.css"></head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Become a Seller — Shopora</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
 <body>
   <div class="sp-auth-container">
     <div class="sp-auth-card">
       <h1>Become a Seller</h1>
       <p class="subtitle">Start selling on Shopora today</p>
-      <div class="sp-form-group"><label>Company Name</label><input id="s-company" placeholder="Your Business Name"></div>
-      <div class="sp-form-group"><label>Email</label><input type="email" id="s-email" placeholder="business@example.com"></div>
-      <div class="sp-form-group"><label>Password</label><input type="password" id="s-pass" placeholder="Min 4 characters"></div>
+
+      <div class="sp-form-group">
+        <label>Company Name</label>
+        <input id="s-company" placeholder="Your Business Name">
+      </div>
+
+      <div class="sp-form-group">
+        <label>Email</label>
+        <input type="email" id="s-email" placeholder="business@example.com">
+      </div>
+
+      <div class="sp-form-group">
+        <label>Password</label>
+        <input type="password" id="s-pass" placeholder="Min 4 characters">
+      </div>
+
       <button class="sp-btn sp-btn-primary sp-btn-block" onclick="doReg()">Create Seller Account</button>
+
       <p class="sp-auth-link">Already a seller? <a href="seller-login.html">Sign In</a></p>
     </div>
   </div>
-  <script src="../../js/db/storage.js"></script><script src="../../js/services/authService.js"></script><script src="../../js/services/productService.js"></script><script src="../../js/services/cartService.js"></script><script src="../../js/services/orderService.js"></script><script src="../../js/services/analyticsService.js"></script><script src="../../js/services/adminService.js"></script><script src="../../js/utils/logger.js"></script><script src="../../js/utils/toast.js"></script><script src="../../js/utils/chartHelper.js"></script><script src="../../js/components.js"></script>
+
+  <script src="../../js/db/storage.js"></script>
+  <script src="../../js/services/authService.js"></script>
+  <script src="../../js/services/productService.js"></script>
+  <script src="../../js/services/cartService.js"></script>
+  <script src="../../js/services/orderService.js"></script>
+  <script src="../../js/services/analyticsService.js"></script>
+  <script src="../../js/services/adminService.js"></script>
+  <script src="../../js/utils/logger.js"></script>
+  <script src="../../js/utils/toast.js"></script>
+  <script src="../../js/utils/chartHelper.js"></script>
+  <script src="../../js/components.js"></script>
+
   <script>
     function doReg() {
       const company = document.getElementById('s-company').value.trim();
       const email = document.getElementById('s-email').value.trim();
       const pass = document.getElementById('s-pass').value;
-      if (!company) { Toast.show('Please enter your company name.','warn'); return; }
-      if (!email) { Toast.show('Please enter your email.','warn'); return; }
-      if (!pass || pass.length < 4) { Toast.show('Password must be at least 4 characters.','warn'); return; }
-      const r = AuthService.register({companyName:company,email:email,password:pass},'seller');
-      if(r.success){Toast.show('Seller account created!','success');setTimeout(()=>window.location.href='seller-dashboard.html',600);}
-      else Toast.show(r.message,'error');
+
+      if (!company) { Toast.show('Please enter your company name.', 'warn'); return; }
+      if (!email) { Toast.show('Please enter your email.', 'warn'); return; }
+      if (!pass || pass.length < 4) { Toast.show('Password must be at least 4 characters.', 'warn'); return; }
+
+      const r = AuthService.register(
+        { companyName: company, email: email, password: pass },
+        'seller'
+      );
+
+      if (r.success) {
+        Toast.show('Seller account created!', 'success');
+        setTimeout(() => window.location.href = 'seller-dashboard.html', 600);
+      } else {
+        Toast.show(r.message, 'error');
+      }
     }
   </script>
 </body>

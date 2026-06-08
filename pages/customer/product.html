@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Product Details — Shopora</title>
   <link rel="stylesheet" href="../../css/style.css">
 </head>
@@ -24,6 +25,7 @@
   <script src="../../js/utils/toast.js"></script>
   <script src="../../js/utils/chartHelper.js"></script>
   <script src="../../js/components.js"></script>
+
   <script>
     let selectedVariant = null;
     let product = null;
@@ -33,10 +35,18 @@
       Components.injectFooter();
 
       const id = new URLSearchParams(window.location.search).get('id');
-      if (!id) { document.getElementById('pdp-container').innerHTML = '<div class="sp-empty"><div class="sp-empty-icon">📦</div><h3>Product not found</h3></div>'; return; }
+      if (!id) {
+        document.getElementById('pdp-container').innerHTML =
+          '<div class="sp-empty"><div class="sp-empty-icon">📦</div><h3>Product not found</h3></div>';
+        return;
+      }
 
       product = ProductService.getById(id);
-      if (!product) { document.getElementById('pdp-container').innerHTML = '<div class="sp-empty"><div class="sp-empty-icon">📦</div><h3>Product not found</h3></div>'; return; }
+      if (!product) {
+        document.getElementById('pdp-container').innerHTML =
+          '<div class="sp-empty"><div class="sp-empty-icon">📦</div><h3>Product not found</h3></div>';
+        return;
+      }
 
       document.title = product.title + ' — Shopora';
       selectedVariant = product.variants && product.variants[0] ? product.variants[0] : null;
@@ -64,38 +74,95 @@
       const stars = '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
 
       // Unique variant values
-      const colors = [...new Set((p.variants||[]).map(v=>v.color).filter(Boolean).filter(v=>v!=='N/A'))];
-      const sizes = [...new Set((p.variants||[]).map(v=>v.size).filter(Boolean).filter(v=>v!=='N/A'))];
-      const storages = [...new Set((p.variants||[]).map(v=>v.storage).filter(Boolean).filter(v=>v!=='N/A'))];
-      const rams = [...new Set((p.variants||[]).map(v=>v.ram).filter(Boolean).filter(v=>v!=='N/A'))];
+      const colors = [...new Set(
+        (p.variants || []).map(v => v.color).filter(Boolean).filter(v => v !== 'N/A')
+      )];
+      const sizes = [...new Set(
+        (p.variants || []).map(v => v.size).filter(Boolean).filter(v => v !== 'N/A')
+      )];
+      const storages = [...new Set(
+        (p.variants || []).map(v => v.storage).filter(Boolean).filter(v => v !== 'N/A')
+      )];
+      const rams = [...new Set(
+        (p.variants || []).map(v => v.ram).filter(Boolean).filter(v => v !== 'N/A')
+      )];
 
       const variantHTML = (label, values, key) => values.length ? `
-        <div class="sp-variant-group"><label>${label}</label>
-          <div class="sp-variant-options">${values.map((v,i) => `<button class="sp-variant-btn ${i===0?'active':''}" data-key="${key}" data-val="${v}" onclick="selectVariant(this,'${key}','${v}')">${v}</button>`).join('')}</div>
+        <div class="sp-variant-group">
+          <label>${label}</label>
+          <div class="sp-variant-options">
+            ${values.map((v, i) => `
+              <button
+                class="sp-variant-btn ${i === 0 ? 'active' : ''}"
+                data-key="${key}"
+                data-val="${v}"
+                onclick="selectVariant(this,'${key}','${v}')">
+                ${v}
+              </button>
+            `).join('')}
+          </div>
         </div>` : '';
 
       document.getElementById('pdp-main').innerHTML = `
         <div class="sp-pdp-gallery">
-          <div class="sp-pdp-thumbs">${(p.images||[]).map((img,i) => `<div class="sp-pdp-thumb ${i===0?'active':''}" onclick="switchImage(${i})"><img src="${img}" alt="View ${i+1}" style="width:100%;height:100%;object-fit:contain;"></div>`).join('')}</div>
-          <div class="sp-pdp-main-img" id="main-img-container" onmousemove="zoomImage(event)" onmouseleave="resetZoom()">${p.images && p.images[0] ? `<img src="${p.images[0]}" alt="${p.title}" style="width:100%;height:100%;object-fit:contain;transition:transform 0.3s;">` : ''}</div>
+          <div class="sp-pdp-thumbs">
+            ${(p.images || []).map((img, i) => `
+              <div
+                class="sp-pdp-thumb ${i === 0 ? 'active' : ''}"
+                onclick="switchImage(${i})">
+                <img
+                  src="${img}"
+                  alt="View ${i + 1}"
+                  style="width:100%;height:100%;object-fit:contain;">
+              </div>
+            `).join('')}
+          </div>
+          <div
+            class="sp-pdp-main-img"
+            id="main-img-container"
+            onmousemove="zoomImage(event)"
+            onmouseleave="resetZoom()">
+            ${p.images && p.images[0]
+              ? `<img
+                   src="${p.images[0]}"
+                   alt="${p.title}"
+                   style="width:100%;height:100%;object-fit:contain;transition:transform 0.3s;">`
+              : ''}
+          </div>
         </div>
+
         <div class="sp-pdp-info">
           <div class="sp-card-seller">${p.sellerName || p.brand}</div>
           <h1 class="sp-pdp-title">${p.title}</h1>
-          <div class="sp-pdp-rating"><span class="sp-stars" style="font-size:1.1rem;">${stars}</span> <span>${avg} out of 5</span> <span style="color:var(--text-muted);">(${(p.ratings||[]).length} ratings)</span></div>
+
+          <div class="sp-pdp-rating">
+            <span class="sp-stars" style="font-size:1.1rem;">${stars}</span>
+            <span>${avg} out of 5</span>
+            <span style="color:var(--text-muted);">(${(p.ratings || []).length} ratings)</span>
+          </div>
+
           <div style="display:flex;align-items:baseline;gap:.75rem;margin-bottom:.25rem;">
             <span class="sp-pdp-price">$${ep.toFixed(2)}</span>
-            ${p.discount > 0 ? `<span class="sp-pdp-old-price">$${p.price.toFixed(2)}</span><span class="sp-pdp-discount-badge">-${p.discount}%</span>` : ''}
+            ${p.discount > 0
+              ? `<span class="sp-pdp-old-price">$${p.price.toFixed(2)}</span>
+                 <span class="sp-pdp-discount-badge">-${p.discount}%</span>`
+              : ''}
           </div>
-          <div class="sp-pdp-delivery">✓ FREE ${p.deliveryDays||3}-day delivery</div>
+
+          <div class="sp-pdp-delivery">✓ FREE ${p.deliveryDays || 3}-day delivery</div>
           <p class="sp-pdp-desc">${p.description}</p>
+
           <div class="sp-variants">
             ${variantHTML('Color', colors, 'color')}
             ${variantHTML('Size', sizes, 'size')}
             ${variantHTML('Storage', storages, 'storage')}
             ${variantHTML('RAM', rams, 'ram')}
           </div>
-          <div style="font-size:.85rem;color:${p.stock>0?'var(--success)':'var(--danger)'};font-weight:600;margin-bottom:1rem;">${p.stock > 0 ? `✓ In Stock (${p.stock} available)` : '✕ Out of Stock'}</div>
+
+          <div style="font-size:.85rem;color:${p.stock > 0 ? 'var(--success)' : 'var(--danger)'};font-weight:600;margin-bottom:1rem;">
+            ${p.stock > 0 ? `✓ In Stock (${p.stock} available)` : '✕ Out of Stock'}
+          </div>
+
           <div class="sp-btn-group">
             <button class="sp-btn sp-btn-primary" onclick="addToCartPDP()">Add to Cart</button>
             <button class="sp-btn sp-btn-secondary" onclick="buyNow()">Buy Now</button>
@@ -108,8 +175,11 @@
     function switchImage(idx) {
       const imgs = product.images || [];
       if (!imgs[idx]) return;
-      document.getElementById('main-img-container').innerHTML = `<img src="${imgs[idx]}" alt="${product.title}" style="width:100%;height:100%;object-fit:contain;transition:transform 0.3s;">`;
-      document.querySelectorAll('.sp-pdp-thumb').forEach((t,i) => t.classList.toggle('active', i===idx));
+      document.getElementById('main-img-container').innerHTML =
+        `<img src="${imgs[idx]}" alt="${product.title}" style="width:100%;height:100%;object-fit:contain;transition:transform 0.3s;">`;
+      document.querySelectorAll('.sp-pdp-thumb').forEach((t, i) =>
+        t.classList.toggle('active', i === idx)
+      );
     }
 
     function zoomImage(e) {
@@ -129,12 +199,18 @@
     }
 
     function selectVariant(btn, key, val) {
-      btn.closest('.sp-variant-options').querySelectorAll('.sp-variant-btn').forEach(b => b.classList.remove('active'));
+      btn.closest('.sp-variant-options')
+        .querySelectorAll('.sp-variant-btn')
+        .forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+
       // Find matching variant
       const selections = {};
-      document.querySelectorAll('.sp-variant-btn.active').forEach(b => { selections[b.dataset.key] = b.dataset.val; });
-      const match = (product.variants||[]).find(v => {
+      document.querySelectorAll('.sp-variant-btn.active').forEach(b => {
+        selections[b.dataset.key] = b.dataset.val;
+      });
+
+      const match = (product.variants || []).find(v => {
         let ok = true;
         if (selections.color && v.color !== selections.color) ok = false;
         if (selections.size && v.size !== selections.size) ok = false;
@@ -142,29 +218,48 @@
         if (selections.ram && v.ram !== selections.ram) ok = false;
         return ok;
       });
+
       if (match) selectedVariant = match;
     }
 
     function addToCartPDP() {
-      if (selectedVariant && selectedVariant.stock === 0) { Toast.show('This variant is out of stock.', 'warn'); return; }
-      if (product.stock === 0) { Toast.show('This product is out of stock.', 'warn'); return; }
+      if (selectedVariant && selectedVariant.stock === 0) {
+        Toast.show('This variant is out of stock.', 'warn');
+        return;
+      }
+      if (product.stock === 0) {
+        Toast.show('This product is out of stock.', 'warn');
+        return;
+      }
       CartService.addToCart(product.id, selectedVariant, 1);
       Components.updateCartBadge();
       Toast.show('Added to cart!', 'success');
     }
 
     function buyNow() {
-      if (selectedVariant && selectedVariant.stock === 0) { Toast.show('This variant is out of stock.', 'warn'); return; }
-      if (product.stock === 0) { Toast.show('This product is out of stock.', 'warn'); return; }
+      if (selectedVariant && selectedVariant.stock === 0) {
+        Toast.show('This variant is out of stock.', 'warn');
+        return;
+      }
+      if (product.stock === 0) {
+        Toast.show('This product is out of stock.', 'warn');
+        return;
+      }
       CartService.addToCart(product.id, selectedVariant, 1);
       window.location.href = 'checkout.html';
     }
 
     function addToWishlist() {
       const user = AuthService.getCurrentUser();
-      if (!user) { Toast.show('Please sign in to use wishlist.', 'warn'); return; }
+      if (!user) {
+        Toast.show('Please sign in to use wishlist.', 'warn');
+        return;
+      }
       let wl = user.wishlist || [];
-      if (wl.includes(product.id)) { Toast.show('Already in wishlist', 'info'); return; }
+      if (wl.includes(product.id)) {
+        Toast.show('Already in wishlist', 'info');
+        return;
+      }
       wl.push(product.id);
       AuthService.updateProfile({ wishlist: wl });
       Toast.show('Added to wishlist!', 'success');
@@ -175,52 +270,113 @@
       const specs = p.specifications ? Object.entries(p.specifications) : [];
       const features = p.features || [];
       if (!specs.length && !features.length) return;
+
       document.getElementById('pdp-specs').innerHTML = `
-        ${specs.length ? `<h3 class="sp-pdp-section-title">Specifications</h3>
-        <table class="sp-spec-table">${specs.map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>` : ''}
-        ${features.length ? `<h3 class="sp-pdp-section-title">Features & Highlights</h3>
-        <ul class="sp-features">${features.map(f => `<li>${f}</li>`).join('')}</ul>` : ''}
+        ${specs.length
+          ? `<h3 class="sp-pdp-section-title">Specifications</h3>
+             <table class="sp-spec-table">
+               ${specs.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}
+             </table>`
+          : ''}
+        ${features.length
+          ? `<h3 class="sp-pdp-section-title">Features & Highlights</h3>
+             <ul class="sp-features">
+               ${features.map(f => `<li>${f}</li>`).join('')}
+             </ul>`
+          : ''}
       `;
     }
 
     function renderReviews() {
       const p = product;
       document.getElementById('pdp-reviews').innerHTML = `
-        <h3 class="sp-pdp-section-title">Customer Reviews (${(p.reviews||[]).length})</h3>
-        ${(p.reviews||[]).length ? `<div class="sp-reviews">${(p.reviews||[]).map(r => `
-          <div class="sp-review-card">
-            <div class="sp-review-header"><span class="sp-review-user"><span class="sp-stars">${'★'.repeat(r.rating)+'☆'.repeat(5-r.rating)}</span> ${r.username}</span><span class="sp-review-date">${r.date}</span></div>
-            <div class="sp-review-text">${r.comment}</div>
-          </div>
-        `).join('')}</div>` : '<p style="color:var(--text-muted);margin-bottom:1rem;">No reviews yet. Be the first!</p>'}
+        <h3 class="sp-pdp-section-title">Customer Reviews (${(p.reviews || []).length})</h3>
+
+        ${(p.reviews || []).length
+          ? `<div class="sp-reviews">
+               ${(p.reviews || []).map(r => `
+                 <div class="sp-review-card">
+                   <div class="sp-review-header">
+                     <span class="sp-review-user">
+                       <span class="sp-stars">
+                         ${'★'.repeat(r.rating) + '☆'.repeat(5 - r.rating)}
+                       </span>
+                       ${r.username}
+                     </span>
+                     <span class="sp-review-date">${r.date}</span>
+                   </div>
+                   <div class="sp-review-text">${r.comment}</div>
+                 </div>
+               `).join('')}
+             </div>`
+          : '<p style="color:var(--text-muted);margin-bottom:1rem;">No reviews yet. Be the first!</p>'}
+
         <div class="sp-form-card" style="margin-top:1rem;">
           <h3>Write a Review</h3>
-          <div class="sp-form-group"><label>Rating</label>
+          <div class="sp-form-group">
+            <label>Rating</label>
             <div class="star-filter" id="review-stars" style="display:flex;gap:.25rem;"></div>
           </div>
-          <div class="sp-form-group"><label>Your Review</label><textarea id="review-text" rows="3" style="width:100%;padding:.6rem;border:1px solid var(--border);border-radius:var(--radius);resize:vertical;"></textarea></div>
+          <div class="sp-form-group">
+            <label>Your Review</label>
+            <textarea
+              id="review-text"
+              rows="3"
+              style="width:100%;padding:.6rem;border:1px solid var(--border);border-radius:var(--radius);resize:vertical;">
+            </textarea>
+          </div>
           <button class="sp-btn sp-btn-primary" onclick="submitReview()">Submit Review</button>
         </div>
       `;
+
       // Build star selector
       const starEl = document.getElementById('review-stars');
       for (let i = 1; i <= 5; i++) {
         const btn = document.createElement('button');
         btn.textContent = '★';
-        btn.style.cssText = 'background:none;border:1px solid var(--border);border-radius:var(--radius);padding:.3rem .5rem;font-size:.8rem;cursor:pointer;color:var(--star);';
-        btn.onclick = () => { btn.dataset.selected = i; starEl.querySelectorAll('button').forEach((b,idx) => { b.style.borderColor = idx < i ? 'var(--accent)' : 'var(--border)'; b.style.background = idx < i ? 'var(--accent-light)' : 'none'; }); starEl.dataset.rating = i; };
+        btn.style.cssText =
+          'background:none;border:1px solid var(--border);border-radius:var(--radius);'
+          + 'padding:.3rem .5rem;font-size:.8rem;cursor:pointer;color:var(--star);';
+        btn.onclick = () => {
+          btn.dataset.selected = i;
+          starEl.querySelectorAll('button').forEach((b, idx) => {
+            b.style.borderColor = idx < i ? 'var(--accent)' : 'var(--border)';
+            b.style.background = idx < i ? 'var(--accent-light)' : 'none';
+          });
+          starEl.dataset.rating = i;
+        };
         starEl.appendChild(btn);
       }
     }
 
     function submitReview() {
       const user = AuthService.getCurrentUser();
-      if (!user) { Toast.show('Please sign in to review.', 'warn'); return; }
+      if (!user) {
+        Toast.show('Please sign in to review.', 'warn');
+        return;
+      }
+
       const rating = parseInt(document.getElementById('review-stars').dataset.rating || 0);
       const comment = document.getElementById('review-text').value.trim();
-      if (!rating) { Toast.show('Please select a rating.', 'warn'); return; }
-      if (!comment) { Toast.show('Please write your review.', 'warn'); return; }
-      ProductService.addReview(product.id, { userId: user.id, username: user.name || 'Anonymous', rating, comment, date: new Date().toISOString().slice(0,10), flagged: false });
+
+      if (!rating) {
+        Toast.show('Please select a rating.', 'warn');
+        return;
+      }
+      if (!comment) {
+        Toast.show('Please write your review.', 'warn');
+        return;
+      }
+
+      ProductService.addReview(product.id, {
+        userId: user.id,
+        username: user.name || 'Anonymous',
+        rating,
+        comment,
+        date: new Date().toISOString().slice(0, 10),
+        flagged: false
+      });
+
       product = ProductService.getById(product.id);
       renderReviews();
       renderPDP();
@@ -232,7 +388,9 @@
       if (!recs.length) return;
       document.getElementById('pdp-similar').innerHTML = `
         <h3 class="sp-pdp-section-title">Similar Products</h3>
-        <div class="sp-product-grid">${recs.map(p => Components.renderProductCard(p)).join('')}</div>
+        <div class="sp-product-grid">
+          ${recs.map(p => Components.renderProductCard(p)).join('')}
+        </div>
       `;
     }
   </script>
