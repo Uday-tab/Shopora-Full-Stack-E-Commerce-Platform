@@ -357,7 +357,11 @@
         /* Read SVG as text and convert to safe data URL */
         const textReader = new FileReader();
         textReader.onload = (e) => {
-          images[index] = 'data:image/svg+xml,' + encodeURIComponent(e.target.result);
+          let svgContent = e.target.result;
+          if (typeof DOMPurify !== 'undefined') {
+            svgContent = DOMPurify.sanitize(svgContent);
+          }
+          images[index] = 'data:image/svg+xml,' + encodeURIComponent(svgContent);
           renderImages();
           renderPreview();
         };
