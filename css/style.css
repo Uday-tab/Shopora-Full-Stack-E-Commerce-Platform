@@ -97,6 +97,10 @@ input,select,textarea{font-family:var(--font);font-size:.9rem;}
 .sp-cat-chip{padding:.5rem 1rem;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);font-size:.85rem;font-weight:500;color:var(--text-md);transition:all var(--transition);}
 .sp-cat-chip:hover{background:#f1f5f9;border-color:#cbd5e1;}
 .sp-cat-chip.active{background:var(--nav-bg);color:#fff;border-color:var(--nav-bg);}
+/* ============ LOADER ============ */
+.sp-loader-container { display: flex; justify-content: center; align-items: center; padding: 3rem; min-height: 200px; width: 100%; }
+.sp-loader { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: sp-spin 0.8s linear infinite; }
+@keyframes sp-spin { to { transform: rotate(360deg); } }
 
 /* ============ PRODUCT GRID ============ */
 .sp-product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:1.25rem;margin-bottom:2rem;}

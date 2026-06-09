@@ -590,6 +590,19 @@ const Components = (() => {
   /* ==== Script loader helper ==== */
   const getScriptBasePath = () => _pathPrefix;
 
+  /* ==== Loader helper ==== */
+  const withLoader = (containerId, renderFn) => {
+    const el = document.getElementById(containerId);
+    if (!el) {
+      renderFn();
+      return;
+    }
+    el.innerHTML = '<div class="sp-loader-container"><div class="sp-loader"></div></div>';
+    setTimeout(() => {
+      renderFn();
+    }, 150); // Simulate network latency
+  };
+
   return {
     injectCustomerNav,
     injectSellerSidebar,
@@ -599,6 +612,7 @@ const Components = (() => {
     renderProductCard,
     updateCartBadge,
     icons,
-    getScriptBasePath
+    getScriptBasePath,
+    withLoader
   };
 })();

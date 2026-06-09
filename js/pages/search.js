@@ -211,3 +211,4 @@
       document.getElementById('sort-select').value = '';
       applyFilters();
     }
+
