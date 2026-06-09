@@ -176,7 +176,8 @@ const Components = (() => {
 
         <button id="sp-theme-toggle"
                 class="sp-theme-toggle-btn"
-                title="Toggle Theme">
+                title="Toggle Theme"
+                aria-label="Toggle Theme">
           ${icons.sun}
           ${icons.moon}
         </button>

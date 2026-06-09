@@ -73,10 +73,10 @@
                   · Sold by ${item.sellerName || 'Shopora Seller'}
                 </div>
                 <div class="sp-cart-qty">
-                  <button class="sp-cart-qty-btn" onclick="updateQ(${i},-1)">−</button>
+                  <button class="sp-cart-qty-btn" onclick="updateQ(${i},-1)" aria-label="Decrease quantity">−</button>
                   <span>${item.quantity}</span>
-                  <button class="sp-cart-qty-btn" onclick="updateQ(${i},1)">+</button>
-                  <button class="sp-cart-remove-btn" onclick="removeItem(${i})">Remove</button>
+                  <button class="sp-cart-qty-btn" onclick="updateQ(${i},1)" aria-label="Increase quantity">+</button>
+                  <button class="sp-cart-remove-btn" onclick="removeItem(${i})" aria-label="Remove item">Remove</button>
                 </div>
               </div>
               <div class="sp-cart-item-price">
