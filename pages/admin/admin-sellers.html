@@ -85,12 +85,14 @@
     }
 
     function banSeller(id) {
+      if (!confirm('Are you sure you want to ban this seller?')) return;
       AdminService.banSeller(id);
       Toast.show('Seller banned.', 'warn');
       renderSellers();
     }
 
     function activateSeller(id) {
+      if (!confirm('Are you sure you want to activate this seller?')) return;
       AdminService.activateSeller(id);
       Toast.show('Seller activated.', 'success');
       renderSellers();
