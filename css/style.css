@@ -99,7 +99,7 @@ input,select,textarea{font-family:var(--font);font-size:.9rem;}
 .sp-cat-chip.active{background:var(--nav-bg);color:#fff;border-color:var(--nav-bg);}
 
 /* ============ PRODUCT GRID ============ */
-.sp-product-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))!important;gap:1.25rem;margin-bottom:2rem;}
+.sp-product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:1.25rem;margin-bottom:2rem;}
 
 /* ============ PRODUCT CARD ============ */
 .sp-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;transition:transform var(--transition),box-shadow var(--transition);position:relative;min-width:0;max-width:100%;}
@@ -425,19 +425,17 @@ input,select,textarea{font-family:var(--font);font-size:.9rem;}
 }
 
 /* Form inputs styling */
-input, select, textarea {
+:where(input, select, textarea) {
   background: var(--card);
   color: var(--text);
   border: 1px solid var(--border);
 }
-[data-theme="dark"] input, 
-[data-theme="dark"] select, 
-[data-theme="dark"] textarea {
+:where([data-theme="dark"]) :where(input, select, textarea) {
   background: #0f172a;
   color: #f8fafc;
   border-color: #1e293b;
 }
-[data-theme="dark"] select option {
+:where([data-theme="dark"]) :where(select) option {
   background: #0f172a;
   color: #f8fafc;
 }
