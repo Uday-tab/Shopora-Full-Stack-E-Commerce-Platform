@@ -146,6 +146,27 @@
       const cart = CartService.getCart();
       const user = AuthService.getCurrentUser();
 
+      /* Validate stock availability for all items in the cart */
+      for (const item of cart) {
+        const product = ProductService.getById(item.productId);
+        if (!product) {
+          Toast.show(`Product "${item.title}" is no longer available.`, 'warn');
+          return;
+        }
+        const maxStock = (item.variant && typeof item.variant.stock === 'number')
+          ? item.variant.stock
+          : (product.stock || 0);
+
+        if (maxStock <= 0) {
+          Toast.show(`"${item.title}" is out of stock. Please remove it from your cart.`, 'warn');
+          return;
+        }
+        if (item.quantity > maxStock) {
+          Toast.show(`Only ${maxStock} units of "${item.title}" are available. Please adjust your cart.`, 'warn');
+          return;
+        }
+      }
+
       const addr = {
         name: document.getElementById('co-name').value.trim(),
         line1: document.getElementById('co-addr').value.trim(),
