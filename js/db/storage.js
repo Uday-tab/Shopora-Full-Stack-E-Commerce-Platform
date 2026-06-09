@@ -61,11 +61,29 @@ const ShoporaDB = (() => {
     return record;
   };
 
+  const _isObject = (item) => item && typeof item === 'object' && !Array.isArray(item);
+
+  const _deepMerge = (target, source) => {
+    if (!_isObject(target) || !_isObject(source)) return source;
+    Object.keys(source).forEach(key => {
+      const targetValue = target[key];
+      const sourceValue = source[key];
+      if (_isObject(targetValue) && _isObject(sourceValue)) {
+        target[key] = _deepMerge(Object.assign({}, targetValue), sourceValue);
+      } else {
+        target[key] = sourceValue;
+      }
+    });
+    return target;
+  };
+
   const update = (table, id, patch) => {
     const rows = _get(table);
     const idx = rows.findIndex(r => r.id === id);
     if (idx === -1) return null;
-    rows[idx] = { ...rows[idx], ...patch };
+    
+    // Deep merge patch into the existing record
+    rows[idx] = _deepMerge({ ...rows[idx] }, patch);
     _set(table, rows);
     return rows[idx];
   };

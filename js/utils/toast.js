@@ -49,7 +49,9 @@ const Toast = (() => {
     toast.innerHTML =
       `<span style="font-size:1.2rem;color:${colors[type] || colors.info};font-weight:700;">`
       + `${icons[type] || icons.info}</span>`
-      + `<span>${message}</span>`;
+      + `<span class="shopora-toast-msg"></span>`;
+      
+    toast.querySelector('.shopora-toast-msg').textContent = message;
 
     _container.appendChild(toast);
 
