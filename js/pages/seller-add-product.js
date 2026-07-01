@@ -77,10 +77,7 @@
                     id="p-category"
                     style="width:100%;padding:.6rem;border:1px solid var(--border);border-radius:var(--radius);"
                   >
-                    <option value="electronics">Electronics</option>
-                    <option value="smarthome">Smart Home</option>
-                    <option value="apparel">Apparel</option>
-                    <option value="books">Books</option>
+                    ${ShoporaDB.getAll('categories').map(c => `<option value="${c.value}">${c.label}</option>`).join('')}
                   </select>
                 </div>
               </div>

@@ -44,98 +44,113 @@
       const total = +(subtotal + tax).toFixed(2);
 
       document.getElementById('checkout-page').innerHTML = `
-        <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:1.5rem;">Checkout</h2>
-        <div class="sp-checkout-grid">
-          <div>
-            <div class="sp-form-card">
-              <h3>Shipping Address</h3>
-              <div class="sp-form-group">
-                <label>Full Name</label>
-                <input id="co-name" value="${user.name || ''}">
-              </div>
-              <div class="sp-form-group">
-                <label>Address Line</label>
-                <input id="co-addr" value="${addr.line1 || ''}">
-              </div>
-              <div class="sp-form-row">
+        <div class="sp-container" style="max-width:1000px;">
+          <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:2rem;">Checkout</h2>
+          <div id="checkout-grid" class="sp-checkout-grid">
+            <div>
+              <div class="sp-form-card">
+                <h3>Shipping Address</h3>
                 <div class="sp-form-group">
-                  <label>City</label>
-                  <input id="co-city" value="${addr.city || ''}">
+                  <label>Full Name</label>
+                  <input id="co-name" value="${user.name || ''}">
                 </div>
                 <div class="sp-form-group">
-                  <label>State</label>
-                  <input id="co-state" value="${addr.state || ''}">
+                  <label>Address Line</label>
+                  <input id="co-addr" value="${addr.line1 || ''}">
+                </div>
+                <div class="sp-form-row">
+                  <div class="sp-form-group">
+                    <label>City</label>
+                    <input id="co-city" value="${addr.city || ''}">
+                  </div>
+                  <div class="sp-form-group">
+                    <label>State</label>
+                    <input id="co-state" value="${addr.state || ''}">
+                  </div>
+                </div>
+                <div class="sp-form-row">
+                  <div class="sp-form-group">
+                    <label>ZIP Code</label>
+                    <input id="co-zip" value="${addr.zip || ''}">
+                  </div>
+                  <div class="sp-form-group">
+                    <label>Phone</label>
+                    <input id="co-phone" value="${addr.phone || ''}">
+                  </div>
                 </div>
               </div>
-              <div class="sp-form-row">
+
+              <div class="sp-form-card">
+                <h3>Payment Method</h3>
                 <div class="sp-form-group">
-                  <label>ZIP Code</label>
-                  <input id="co-zip" value="${addr.zip || ''}">
+                  <label>Card Number</label>
+                  <input id="co-card" placeholder="4111 1111 1111 1111" value="4111 1111 1111 1111">
                 </div>
-                <div class="sp-form-group">
-                  <label>Phone</label>
-                  <input id="co-phone" value="${addr.phone || ''}">
+                <div class="sp-form-row">
+                  <div class="sp-form-group">
+                    <label>Expiry</label>
+                    <input id="co-exp" placeholder="MM/YY" value="12/28">
+                  </div>
+                  <div class="sp-form-group">
+                    <label>CVV</label>
+                    <input id="co-cvv" placeholder="123" value="123">
+                  </div>
                 </div>
+                <p style="font-size:.75rem;color:var(--text-muted);margin-top:.5rem;">
+                  This is a simulation. No real charges will be made.
+                </p>
               </div>
+
+              <button class="sp-btn sp-btn-primary" style="width:100%;margin-top:1.5rem;font-size:1.1rem;padding:1rem;" onclick="placeOrder()">
+                Place Order — $${total.toFixed(2)}
+              </button>
             </div>
 
-            <div class="sp-form-card">
-              <h3>Payment Method</h3>
-              <div class="sp-form-group">
-                <label>Card Number</label>
-                <input id="co-card" placeholder="4111 1111 1111 1111" value="4111 1111 1111 1111">
-              </div>
-              <div class="sp-form-row">
-                <div class="sp-form-group">
-                  <label>Expiry</label>
-                  <input id="co-exp" placeholder="MM/YY" value="12/28">
+            <div class="sp-cart-summary">
+              <h3>Order Summary</h3>
+              ${cart.map(item => `
+                <div style="display:flex;justify-content:space-between;margin-bottom:.5rem;font-size:.85rem;">
+                  <span>
+                    ${item.title.length > 30 ? item.title.slice(0, 30) + '…' : item.title}
+                    ×${item.quantity}
+                  </span>
+                  <span>
+                    $${((item.variantPrice || item.effectivePrice) * item.quantity).toFixed(2)}
+                  </span>
                 </div>
-                <div class="sp-form-group">
-                  <label>CVV</label>
-                  <input id="co-cvv" placeholder="123" value="123">
-                </div>
+              `).join('')}
+              <div class="sp-summary-row" style="margin-top:.75rem;">
+                <span>Subtotal</span>
+                <span>$${subtotal.toFixed(2)}</span>
               </div>
-              <p style="font-size:.75rem;color:var(--text-muted);margin-top:.5rem;">
-                This is a simulation. No real charges will be made.
-              </p>
+              <div class="sp-summary-row">
+                <span>Tax</span>
+                <span>$${tax.toFixed(2)}</span>
+              </div>
+              <div class="sp-summary-row">
+                <span>Shipping</span>
+                <span style="color:var(--success);">FREE</span>
+              </div>
+              <div class="sp-summary-total">
+                <span>Total</span>
+                <span>$${total.toFixed(2)}</span>
+              </div>
             </div>
-
-            <button
-              class="sp-btn sp-btn-primary sp-btn-block"
-              onclick="placeOrder()"
-              style="padding:.85rem;">
-              Place Order — $${total.toFixed(2)}
-            </button>
           </div>
 
-          <div class="sp-cart-summary">
-            <h3>Order Summary</h3>
-            ${cart.map(item => `
-              <div style="display:flex;justify-content:space-between;margin-bottom:.5rem;font-size:.85rem;">
-                <span>
-                  ${item.title.length > 30 ? item.title.slice(0, 30) + '…' : item.title}
-                  ×${item.quantity}
-                </span>
-                <span>
-                  $${((item.variantPrice || item.effectivePrice) * item.quantity).toFixed(2)}
-                </span>
+          <!-- Mock Payment Gateway Overlay -->
+          <div id="mock-gateway" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:60vh;">
+            <div style="background:var(--card); padding:3rem; border-radius:var(--radius); border:1px solid var(--border); text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.05); max-width:400px; width:100%;">
+              <div style="margin-bottom:1.5rem; height:60px; display:flex; align-items:center; justify-content:center;">
+                <div id="pg-spinner" class="sp-loader" style="border-top-color:var(--primary); width:50px; height:50px;"></div>
+                <svg id="pg-icon" style="display:none; width:60px; height:60px; color:var(--success);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               </div>
-            `).join('')}
-            <div class="sp-summary-row" style="margin-top:.75rem;">
-              <span>Subtotal</span>
-              <span>$${subtotal.toFixed(2)}</span>
-            </div>
-            <div class="sp-summary-row">
-              <span>Tax</span>
-              <span>$${tax.toFixed(2)}</span>
-            </div>
-            <div class="sp-summary-row">
-              <span>Shipping</span>
-              <span style="color:var(--success);">FREE</span>
-            </div>
-            <div class="sp-summary-total">
-              <span>Total</span>
-              <span>$${total.toFixed(2)}</span>
+              <h3 id="pg-text" style="font-size:1.2rem; font-weight:600; color:var(--text); margin-bottom:.5rem; transition: color 0.3s;">Processing Payment...</h3>
+              <p style="color:var(--text-md); font-size:.9rem;">Please do not refresh or close this page.</p>
+              <div style="margin-top:1.5rem; display:flex; justify-content:center; gap:.5rem; color:var(--text-muted);">
+                <svg width="32" height="20" viewBox="0 0 32 20" fill="currentColor"><rect width="32" height="20" rx="3" fill="#E2E8F0"/><circle cx="11" cy="10" r="5" fill="#EF4444"/><circle cx="21" cy="10" r="5" fill="#F59E0B"/></svg>
+                <svg width="32" height="20" viewBox="0 0 32 20" fill="currentColor"><rect width="32" height="20" rx="3" fill="#E2E8F0"/><path d="M12 14.5L9.5 9.5H11.5L13 13L14.5 9.5H16.5L14 14.5H12Z" fill="#1E3A8A"/><path d="M17.5 14.5L15 9.5H17L18.5 13L20 9.5H22L19.5 14.5H17.5Z" fill="#1E3A8A"/></svg>
+              </div>
             </div>
           </div>
         </div>`;
@@ -207,44 +222,59 @@
         return;
       }
 
-      const subtotal = CartService.getSubtotal();
-      const tax = +(subtotal * .08).toFixed(2);
-      const total = +(subtotal + tax).toFixed(2);
+      // Hide checkout and show mock gateway
+      document.getElementById('checkout-grid').style.display = 'none';
+      document.getElementById('mock-gateway').style.display = 'flex';
+      
+      const pgText = document.getElementById('pg-text');
+      const pgSpinner = document.getElementById('pg-spinner');
+      const pgIcon = document.getElementById('pg-icon');
 
-      // Group items by seller for individual orders
-      const sellerGroups = {};
-      cart.forEach(item => {
-        const sid = item.sellerId || 'unknown';
-        if (!sellerGroups[sid]) sellerGroups[sid] = [];
-        sellerGroups[sid].push(item);
-      });
+      // Simulate network request and 3D Secure
+      setTimeout(() => {
+        pgText.textContent = 'Authenticating with bank...';
+      }, 1500);
 
-      const orderIds = [];
-      Object.entries(sellerGroups).forEach(([sellerId, items]) => {
-        const orderSubtotal = items.reduce(
-          (s, i) => s + (i.variantPrice || i.effectivePrice) * i.quantity,
-          0
-        );
-        const orderTax = +(orderSubtotal * 0.08).toFixed(2);
-        const orderTotal = +(orderSubtotal + orderTax).toFixed(2);
-        const order = OrderService.createOrder({
-          userId: user.id,
-          sellerId,
-          items,
-          total: orderTotal,
-          shippingAddress: addr
+      setTimeout(() => {
+        pgSpinner.style.display = 'none';
+        pgIcon.style.display = 'block';
+        pgText.textContent = 'Payment Approved!';
+        pgText.style.color = 'var(--success)';
+      }, 3500);
+
+      setTimeout(() => {
+        // Group items by seller for individual orders
+        const sellerGroups = {};
+        cart.forEach(item => {
+          const sid = item.sellerId || 'unknown';
+          if (!sellerGroups[sid]) sellerGroups[sid] = [];
+          sellerGroups[sid].push(item);
         });
-        orderIds.push(order.id);
-      });
 
-      CartService.clearCart();
-      Components.updateCartBadge();
-      window.location.href = `order-confirmation.html?ids=${orderIds.join(',')}`;
+        const orderIds = [];
+        Object.entries(sellerGroups).forEach(([sellerId, items]) => {
+          const orderSubtotal = items.reduce(
+            (s, i) => s + (i.variantPrice || i.effectivePrice) * i.quantity,
+            0
+          );
+          const orderTax = +(orderSubtotal * 0.08).toFixed(2);
+          const orderTotal = +(orderSubtotal + orderTax).toFixed(2);
+          const order = OrderService.createOrder({
+            userId: user.id,
+            sellerId,
+            items,
+            total: orderTotal,
+            shippingAddress: addr
+          });
+          orderIds.push(order.id);
+        });
+
+        CartService.clearCart();
+        Components.updateCartBadge();
+        window.location.href = `order-confirmation.html?ids=${orderIds.join(',')}`;
+      }, 5000);
     }
   </script>
 </body>
-</html>
-
-
 
 

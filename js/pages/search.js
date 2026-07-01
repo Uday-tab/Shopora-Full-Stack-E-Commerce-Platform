@@ -47,8 +47,8 @@
       const cats = ProductService.getCategories();
       document.getElementById('filter-categories').innerHTML = cats.map(c =>
         `<label class="filter-check">
-          <input type="checkbox" value="${c}" onchange="applyFilters()">
-          ${c.charAt(0).toUpperCase() + c.slice(1)}
+          <input type="checkbox" value="${c.value}" onchange="applyFilters()">
+          ${c.label}
         </label>`
       ).join('');
 

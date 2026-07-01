@@ -163,9 +163,7 @@ const ProductService = (() => {
   };
 
   const getCategories = () => {
-    const prods = ShoporaDB.getAll('products')
-      .filter(p => p.status === 'published');
-    return [...new Set(prods.map(p => p.category))];
+    return ShoporaDB.getAll('categories');
   };
 
   const getBrands = () => {

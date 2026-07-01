@@ -111,6 +111,22 @@ const AdminService = (() => {
     ShoporaDB.remove('users', userId);
   };
 
+  /* ----- Categories ----- */
+  const addCategory = (categoryObj) => {
+    return ShoporaDB.insert('categories', categoryObj);
+  };
+
+  const removeCategory = (categoryId) => {
+    return ShoporaDB.remove('categories', categoryId);
+  };
+
+  /* ----- Payouts ----- */
+  const getAllPayouts = () => ShoporaDB.getAll('payouts');
+
+  const approvePayout = (payoutId) => {
+    return ShoporaDB.update('payouts', payoutId, { status: 'approved' });
+  };
+
   return {
     getAllUsers,
     getAllSellers,
@@ -123,6 +139,10 @@ const AdminService = (() => {
     createReport,
     getReports,
     resolveReport,
-    deleteUser
+    deleteUser,
+    addCategory,
+    removeCategory,
+    getAllPayouts,
+    approvePayout
   };
 })();

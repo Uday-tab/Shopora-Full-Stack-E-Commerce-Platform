@@ -122,11 +122,33 @@ const AnalyticsService = (() => {
     return { labels, data };
   };
 
+  /* ----- Payouts ----- */
+  const requestPayout = (sellerId, amount) => {
+    const seller = ShoporaDB.getById('sellers', sellerId);
+    if (!seller || seller.revenue < amount) throw new Error('Insufficient funds');
+    
+    // Deduct revenue temporarily (or simply track total payouts vs revenue)
+    ShoporaDB.update('sellers', sellerId, { revenue: seller.revenue - amount });
+    
+    return ShoporaDB.insert('payouts', {
+      sellerId,
+      amount,
+      status: 'pending',
+      date: new Date().toISOString().slice(0, 10)
+    });
+  };
+
+  const getPayoutsBySeller = (sellerId) => {
+    return ShoporaDB.query('payouts', p => p.sellerId === sellerId);
+  };
+
   return {
     getSellerStats,
     getSellerRevenueChart,
     getSellerTopProducts,
     getPlatformStats,
-    getPlatformRevenueChart
+    getPlatformRevenueChart,
+    requestPayout,
+    getPayoutsBySeller
   };
 })();

@@ -111,6 +111,35 @@
             </tbody>
           </table>
         </div>
+
+        <div class="sp-charts-row" style="margin-top:2rem;">
+          <div class="sp-table-wrap" style="flex:1;">
+            <div class="sp-table-header">
+              <h3>Pending Payouts</h3>
+            </div>
+            <table class="sp-table">
+              <thead><tr><th>Seller ID</th><th>Date</th><th>Amount</th><th>Action</th></tr></thead>
+              <tbody id="payouts-tbody"></tbody>
+            </table>
+          </div>
+
+          <div class="sp-table-wrap" style="flex:1;">
+            <div class="sp-table-header">
+              <h3>Categories</h3>
+            </div>
+            <div style="padding:1rem;">
+              <div style="display:flex;gap:.5rem;margin-bottom:1rem;">
+                <input id="new-cat-id" placeholder="ID (e.g. books)" style="flex:1;padding:.5rem;border:1px solid var(--border);border-radius:var(--radius);">
+                <input id="new-cat-label" placeholder="Label (e.g. Books)" style="flex:2;padding:.5rem;border:1px solid var(--border);border-radius:var(--radius);">
+                <button class="sp-btn sp-btn-primary" onclick="addCat()">Add</button>
+              </div>
+              <table class="sp-table">
+                <thead><tr><th>ID</th><th>Label</th><th>Action</th></tr></thead>
+                <tbody id="cats-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       `;
 
       try {
@@ -130,7 +159,57 @@
       } catch(e) {
         console.warn('Charts unavailable (Chart.js may not have loaded):', e.message);
       }
+
+      renderCats();
+      renderPayouts();
     });
+
+    function renderCats() {
+      const cats = ShoporaDB.getAll('categories');
+      document.getElementById('cats-tbody').innerHTML = cats.map(c => `
+        <tr>
+          <td>${c.value}</td>
+          <td>${c.label}</td>
+          <td><button class="sp-btn sp-btn-danger" style="padding:.25rem .5rem;" onclick="delCat('${c.id}')">Del</button></td>
+        </tr>
+      `).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text-muted);">No categories</td></tr>';
+    }
+
+    function addCat() {
+      const val = document.getElementById('new-cat-id').value.trim().toLowerCase();
+      const lbl = document.getElementById('new-cat-label').value.trim();
+      if (!val || !lbl) return Toast.show('Fill both fields', 'warn');
+      AdminService.addCategory({ id: 'cat-' + Date.now(), value: val, label: lbl });
+      document.getElementById('new-cat-id').value = '';
+      document.getElementById('new-cat-label').value = '';
+      Toast.show('Category added', 'success');
+      renderCats();
+    }
+
+    function delCat(id) {
+      if (!confirm('Delete category?')) return;
+      AdminService.removeCategory(id);
+      Toast.show('Category deleted', 'success');
+      renderCats();
+    }
+
+    function renderPayouts() {
+      const payouts = AdminService.getAllPayouts().filter(p => p.status === 'pending');
+      document.getElementById('payouts-tbody').innerHTML = payouts.map(p => `
+        <tr>
+          <td>${p.sellerId}</td>
+          <td>${p.date}</td>
+          <td style="color:var(--success);font-weight:600;">$${p.amount.toFixed(2)}</td>
+          <td><button class="sp-btn sp-btn-primary" style="padding:.25rem .5rem;" onclick="apprPayout('${p.id}')">Approve</button></td>
+        </tr>
+      `).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);">No pending payouts</td></tr>';
+    }
+
+    function apprPayout(id) {
+      AdminService.approvePayout(id);
+      Toast.show('Payout approved', 'success');
+      renderPayouts();
+    }
   </script>
 </body>
 </html>

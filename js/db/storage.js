@@ -219,6 +219,17 @@ const ShoporaDB = (() => {
       }
     ]);
 
+    /* ----- categories ----- */
+    _set('categories', [
+      { id: 'cat-1', value: 'electronics', label: 'Electronics' },
+      { id: 'cat-2', value: 'smarthome', label: 'Smart Home' },
+      { id: 'cat-3', value: 'apparel', label: 'Apparel' },
+      { id: 'cat-4', value: 'books', label: 'Books' }
+    ]);
+
+    /* ----- payouts ----- */
+    _set('payouts', []);
+
     /* ----- product image generator (returns data URL for demo imagery) ----- */
     const svgImg = (bgColor, label, accent) => {
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">`

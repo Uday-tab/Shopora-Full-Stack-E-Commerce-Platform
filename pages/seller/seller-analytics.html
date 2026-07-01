@@ -60,6 +60,18 @@
           </div>
         </div>
 
+        <div class="sp-form-card" style="margin-top:2rem; background: var(--card); display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h3 style="margin:0;">Available Balance</h3>
+            <p style="color:var(--text-md);font-size:.9rem;margin-top:.25rem;">Funds available for withdrawal.</p>
+          </div>
+          <div style="display:flex; align-items:center; gap: 1rem;">
+            <div style="font-size:1.5rem; font-weight:700; color:var(--success);">$${stats.revenue.toFixed(2)}</div>
+            <button class="sp-btn sp-btn-primary" onclick="reqPayout()">Withdraw Funds</button>
+          </div>
+        </div>
+        <div id="payout-history" style="margin-top:1rem; margin-bottom:2rem;"></div>
+
         <div class="sp-charts-row">
           <div class="sp-chart-card">
             <h4>Revenue Over Time</h4>
@@ -115,7 +127,51 @@
       } catch(e) {
         console.warn('Charts unavailable:', e.message);
       }
+
+      renderPayouts(seller.id);
     });
+
+    function renderPayouts(sellerId) {
+      const payouts = AnalyticsService.getPayoutsBySeller(sellerId);
+      if (!payouts.length) return;
+
+      document.getElementById('payout-history').innerHTML = \`
+        <div class="sp-table-wrap">
+          <div class="sp-table-header"><h3>Recent Payout Requests</h3></div>
+          <table class="sp-table">
+            <thead><tr><th>ID</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody>
+              \${payouts.map(p => \`
+                <tr>
+                  <td>\${p.id}</td>
+                  <td>\${p.date}</td>
+                  <td style="font-weight:600;">$\${p.amount.toFixed(2)}</td>
+                  <td>
+                    <span class="sp-badge \${p.status==='approved'?'sp-badge-success':'sp-badge-warning'}">
+                      \${p.status}
+                    </span>
+                  </td>
+                </tr>
+              \`).join('')}
+            </tbody>
+          </table>
+        </div>
+      \`;
+    }
+
+    function reqPayout() {
+      const seller = AuthService.getCurrentUser();
+      const amount = prompt('Enter amount to withdraw:');
+      if (!amount || isNaN(amount) || amount <= 0) return;
+
+      try {
+        AnalyticsService.requestPayout(seller.id, parseFloat(amount));
+        Toast.show('Withdrawal requested successfully', 'success');
+        setTimeout(() => location.reload(), 1000);
+      } catch (err) {
+        Toast.show(err.message, 'error');
+      }
+    }
   </script>
 </body>
 </html>
